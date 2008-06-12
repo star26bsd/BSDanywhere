@@ -63,10 +63,9 @@ install_filesets() {
 
 # Create mfs directories and devices
 prepare_filesystem() {
-    mkdir -p $LOCAL_ROOT/.mdev $LOCAL_ROOT/.msbin $LOCAL_ROOT/.mbin $LOCAL_ROOT/.musrlocal
-    cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/.mdev/
-    cd $LOCAL_ROOT/dev && ./MAKEDEV all
-    cd $LOCAL_ROOT/.mdev && ./MAKEDEV all
+    mkdir -p $LOCAL_ROOT/.msbin $LOCAL_ROOT/.mbin $LOCAL_ROOT/.musrlocal
+    cd $LOCAL_ROOT/dev && ./MAKEDEV all && cd $LOCAL_ROOT
+    cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/stand/
 }
 
 install_fstab() {
@@ -75,7 +74,7 @@ swap /tmp mfs rw,auto 0 0
 swap /var mfs rw,auto,-s=48000 0 0
 swap /etc mfs rw,auto 0 0
 swap /root mfs rw,auto 0 0
-swap /dev mfs rw,auto,-P/.mdev 0 0
+swap /dev mfs rw,auto,-s=200 0 0
 swap /home mfs rw,auto,-s=200000 0 0
 EOF
 }
@@ -109,7 +108,8 @@ pkg_add iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozi
 
 # Adjust /etc/rc for our needs
 RC=/etc/rc
-perl -p -i -e 's/# XXX \(root now writeable\)/$&\nfor i in var etc root home; do tar -C \/ zxphf \$i.tgz; done/' $RC
+perl -p -i -e 's@# XXX \(root now writeable\)@$&\nfor i in var etc root home; do tar -C / zxphf /stand/\$i.tgz; done@' $RC
+perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\ncp /stand/MAKEDEV /dev; cd /dev && ./MAKEDEV all@' $RC
 perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 
@@ -356,17 +356,16 @@ chown -R live /home/live
 exit
 
 # Prepare mfs filesystems by packing contents in tgz's
-cd $LOCAL_ROOT
 for fs in var etc root home
 do
-    tar cphf - $fs | gzip -9 > $LOCAL_ROOT/$fs.tgz
+    tar cphf - $fs | gzip -9 > $LOCAL_ROOT/stand/$fs.tgz
 done
 
 # Cleanup build environment
 rm $LOCAL_ROOT/etc/resolv.conf
 
 # Preload mfs mounts
-for i in etc root home var; do cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i; done
+for i in etc var; do cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i; done
 
 # To reedit the cd image, 'rm -rf var && cp -rp .mvar var'
 rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
