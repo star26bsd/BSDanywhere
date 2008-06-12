@@ -72,11 +72,11 @@ prepare_filesystem() {
 install_fstab() {
     cat >$LOCAL_ROOT/etc/fstab <<EOF
 swap /tmp mfs rw,auto 0 0
-swap /var mfs rw,auto,-P/.mvar,-s=48000 0 0
-swap /etc mfs rw,auto,-P/.metc 0 0
-swap /root mfs rw,auto,-P/.mroot 0 0
+swap /var mfs rw,auto,-s=48000 0 0
+swap /etc mfs rw,auto 0 0
+swap /root mfs rw,auto 0 0
 swap /dev mfs rw,auto,-P/.mdev 0 0
-swap /home mfs rw,auto,-P/.mhome,-s=200000 0 0
+swap /home mfs rw,auto,-s=200000 0 0
 EOF
 }
 
@@ -107,8 +107,9 @@ pwd_mkdb /etc/master.passwd
 # Install packages
 pkg_add iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
 
-# Add welcome screen output to /etc/rc
+# Adjust /etc/rc for our needs
 RC=/etc/rc
+perl -p -i -e 's/# XXX \(root now writeable\)/$&\nfor i in var etc root home; do tar -C \/ zxphf \$i.tgz; done/' $RC
 perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 
@@ -353,6 +354,12 @@ chown -R live /home/live
 
 # Leave the chroot environment
 exit
+
+# Prepare mfs filesystems by packing contents in tgz's
+for fs in var etc root home
+do
+    tar -C $LOCAL_ROOT cphf - $fs | gzip -9 > $fs.tgz
+done
 
 # Cleanup build environment
 rm $LOCAL_ROOT/etc/resolv.conf
