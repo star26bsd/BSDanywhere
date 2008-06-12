@@ -356,9 +356,10 @@ chown -R live /home/live
 exit
 
 # Prepare mfs filesystems by packing contents in tgz's
+cd $LOCAL_ROOT
 for fs in var etc root home
 do
-    tar -C $LOCAL_ROOT cphf - $fs | gzip -9 > $fs.tgz
+    tar cphf - $fs | gzip -9 > $LOCAL_ROOT/$fs.tgz
 done
 
 # Cleanup build environment
@@ -372,4 +373,4 @@ rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
 
 # Create CD image
 cd $LOCAL_ROOT/..
-mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R.iso -b cdbr -c boot.catalog livecd
+mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o stephan.iso -b cdbr -c boot.catalog livecd
