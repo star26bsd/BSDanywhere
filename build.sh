@@ -262,9 +262,39 @@ sub_networks() {
    fi
 }
 
+sub_password {
+echo -n "Do you want to set a password for root(y/N)?"
+read rootpass
+if [ ! -z $rootpass ]
+then
+   if [ $rootpass = "y" ] || [ $rootpass = "Y" ] || [ $rootpass = "Yes" ] || [ $rootpass = "yes" ] || [ $rootpass = "YES" ]
+   then
+      passwd root
+   else
+      echo "password for root not set (password empty)"
+   fi
+else
+   echo "password for root not set (password empty)"
+fi
+echo -n "Do you want to set a password for user live(y/N)?"
+read userpass
+if [ ! -z $userpass ]
+then
+   if [ $userpass = "y" ] || [ $userpass = "Y" ] || [ $userpass = "Yes" ] || [ $userpass = "yes" ] || [ $userpass = "YES" ]
+   then
+      passwd live
+   else
+      echo "password for live not set (password empty)"
+   fi
+else
+   echo "password for live not set (password empty)"
+fi
+}
+
 sub_mfsmount
 sub_kblayout
 sub_timezone
+sub_password
 sub_networks
 EOF
 
