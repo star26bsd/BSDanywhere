@@ -108,8 +108,8 @@ pkg_add iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozi
 
 # Adjust /etc/rc for our needs
 RC=/etc/rc
-perl -p -i -e 's@# XXX \(root now writeable\)@$&\nfor i in var etc root home; do tar -C / zxphf /stand/\$i.tgz; done@' $RC
-perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\ncp /stand/MAKEDEV /dev; cd /dev && ./MAKEDEV all@' $RC
+perl -p -i -e 's@# XXX \(root now writeable\)@$&\nfor i in var etc root home; do echo -n "Populating \$i ... "; tar -C / zxphf /stand/\$i.tgz; echo done; done@' $RC
+perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\necho "Creating device nodes ... "; cp /stand/MAKEDEV /dev; cd /dev && ./MAKEDEV all; echo done@' $RC
 perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 
