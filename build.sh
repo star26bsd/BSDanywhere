@@ -159,8 +159,8 @@ sub_mfsmount() {
         echo "Free memory available, using it for /bin and /sbin."
         mount_mfs -s 24000 swap /.mbin
         mount_mfs -s 48000 swap /.msbin
-        /bin/cp -rp /bin /.mbin
-        /bin/cp -rp /sbin /.msbin
+        /bin/cp -rp /bin/* /.mbin/
+        /bin/cp -rp /sbin/* /.msbin/
         perl -p -i -e 's#^(PATH=)(.*)#\$1/.msbin:/.mbin:\$2#' /root/.profile
         perl -p -i -e 's#^(PATH=)(.*)#\$1/.msbin:/.mbin:\$2#' /home/live/.profile
     fi
