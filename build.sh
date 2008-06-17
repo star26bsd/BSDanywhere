@@ -167,7 +167,7 @@ sub_mfsmount() {
     fi
     if [ \$(sysctl -n hw.physmem) -gt 800000000 ]
     then
-        echo "Lots of memory available, do you want to use it for /usr/local? (Y/n) "
+        echo -n "Lots of memory available, do you want to use it for /usr/local? (Y/n) "
         read doit
         if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
         then
@@ -251,7 +251,7 @@ sub_networks() {
           read if
           if [ -z \$if ] || [ \$if = "y" ] || [ \$if = "Y" ] || [ \$if = "yes" ] || [ \$if = "Yes" ]
           then
-              sudo ifconfig \$nic up && sudo dhclient \$nic &
+              sudo ifconfig \$nic up && sudo dhclient -q \$nic &
           fi
       done
 
@@ -264,10 +264,10 @@ sub_networks() {
    fi
 }
 
-sub_mfsmount
 sub_kblayout
 sub_timezone
 sub_networks
+sub_mfsmount
 EOF
 
 # Write privoxy config
