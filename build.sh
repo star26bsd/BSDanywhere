@@ -170,7 +170,7 @@ fi
 }
 
 mount | grep mnt
-if [ $? -eq 0 ]
+if [ \$? -eq 0 ]
 then
    echo "Something is already mounted on /mnt!" >&2
    echo "Please umount /mnt first and then try again!" >&2
@@ -181,20 +181,20 @@ echo -n "Which device is your usbdrive (without dev-directory, for example sd0 o
 read usb
 
 flag=0
-disklabel "${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
-if [ $? -eq 0 ]
+disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
+if [ \$? -eq 0 ]
 then
-   mount_msdos /dev/"${usb}"i /mnt
+   mount_msdos /dev/"\${usb}"i /mnt
    sub_backup
    umount /mnt
    flag=1
 fi
-if [ $flag -eq 0 ]
+if [ \$flag -eq 0 ]
 then
-   disklabel "${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
-   if [ $? -eq 0 ]
+   disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+   if [ \$? -eq 0 ]
    then
-      mount /dev/"${usb}"a /mnt
+      mount /dev/"\${usb}"a /mnt
       sub_backup
       umount /mnt
    else
@@ -204,6 +204,9 @@ then
 fi
 
 EOF
+
+# make /usr/local/sbin/mkbackup executable
+chmod 555 /usr/local/sbin/mkbackup
 
 # Extend rc.local
 cat >/etc/rc.local <<EOF 
@@ -341,27 +344,27 @@ sub_networks() {
 sub_restore() {
    echo -n "Do you want to restore data from an usbdrive (y/N)? "
    read restore
-   if [ ! -z $restore ]
+   if [ ! -z \$restore ]
    then
-      if [ $restore = "y" ] || [ $restore = "yes" ] || [ $restore = "Y" ] || [ $restore = "YES" ] || [ $restore = "Yes" ]
+      if [ \$restore = "y" ] || [ \$restore = "yes" ] || [ \$restore = "Y" ] || [ \$restore = "YES" ] || [ \$restore = "Yes" ]
       then
 	 echo -n "Which device is your usbdrive (without dev-directory, for example sd0 or sd1)? "
 	 read usb
 	 flag=0
-	 disklabel "${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
-	 if [ $? -eq 0 ]
+	 disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
+	 if [ \$? -eq 0 ]
 	 then
-	    mount_msdos /dev/"${usb}"i /mnt2
+	    mount_msdos /dev/"\${usb}"i /mnt2
 	    sub_restore
 	    umount /mnt2
 	    flag=1
 	 fi
-	 if [ $flag -eq 0 ]
+	 if [ \$flag -eq 0 ]
 	 then
-	    disklabel "${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
-	    if [ $? -eq 0 ]
+	    disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+	    if [ \$? -eq 0 ]
 	    then
-	       mount /dev/"${usb}"a /mnt2
+	       mount /dev/"\${usb}"a /mnt2
 	       sub_restore
 	       umount /mnt2
 	    else
