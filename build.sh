@@ -354,9 +354,9 @@ sub_restore() {
 	 disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
 	 if [ \$? -eq 0 ]
 	 then
-	    mount_msdos /dev/"\${usb}"i /mnt2
+	    mount_msdos /dev/"\${usb}"i /mnt
 	    sub_restore
-	    umount /mnt2
+	    umount /mnt
 	    flag=1
 	 fi
 	 if [ \$flag -eq 0 ]
@@ -364,9 +364,9 @@ sub_restore() {
 	    disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
 	    if [ \$? -eq 0 ]
 	    then
-	       mount /dev/"\${usb}"a /mnt2
+	       mount /dev/"\${usb}"a /mnt
 	       sub_restore
-	       umount /mnt2
+	       umount /mnt
 	    else
 	       echo "Can't find correct partition on device, nothing restored!"
 	    fi
