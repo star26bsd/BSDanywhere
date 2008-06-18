@@ -341,6 +341,15 @@ sub_networks() {
    fi
 }
 
+sub_dorestore() {
+   if [ -r /mnt/BSDanywhere.tgz ]
+   then
+      tar xzpf /mnt/BSDanywhere.tgz -C /home/live
+   else
+      echo "Backup data not found, restored nothing!"
+   fi
+}
+
 sub_restore() {
    echo -n "Do you want to restore data from an usbdrive (y/N)? "
    read restore
@@ -355,7 +364,7 @@ sub_restore() {
 	 if [ \$? -eq 0 ]
 	 then
 	    mount_msdos /dev/"\${usb}"i /mnt
-	    sub_restore
+	    sub_dorestore
 	    umount /mnt
 	    flag=1
 	 fi
@@ -365,7 +374,7 @@ sub_restore() {
 	    if [ \$? -eq 0 ]
 	    then
 	       mount /dev/"\${usb}"a /mnt
-	       sub_restore
+	       sub_dorestore
 	       umount /mnt
 	    else
 	       echo "Can't find correct partition on device, nothing restored!"
