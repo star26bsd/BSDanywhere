@@ -116,14 +116,12 @@ perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 # Prepare welcome screen
 cat >/etc/welcome <<EOF
 
-Welcome at BSDanywhere $RELEASE, the OpenBSD Live system at your fingertips!
+Welcome to BSDanywhere $RELEASE - enlightenment at your fingertips!
 
-Two ways to log on to the system are provided: 'live' and 'root'
-
-Log in as 'live' with empty password for the graphical environment. Access
-to administrative commands are granted using the 'sudo' command. Experts may
-also log in as 'root' without password, which will neither start a graphical
-environment nor any custom BSDanywhere scripts.
+You may now log in using either 'live' or 'root' as a user name. Both
+accounts have no default password set. If you'd like to set one, use the
+'passwd' program after you logged on. For 'live', a graphical environment
+will be launched. You may use the 'sudo' command for priviliged commands.
 
 EOF
 
@@ -173,9 +171,9 @@ sub_mfsmount() {
         then
             # /usr/local uses ~390M
             mount_mfs -s 900000 swap /.musrlocal
-            /bin/cp -rp /usr/local /.musrlocal
-            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /root/.profile
-            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal:\$2#' /home/live/.profile
+            /bin/cp -rp /usr/local/* /.musrlocal
+            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /root/.profile
+            perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /home/live/.profile
         fi
     fi
 }
@@ -207,7 +205,7 @@ sub_timezone() {
 	    return
 	 fi
       else
-	 echo "Leaving timezone unconfigured"
+	 echo "Leaving timezone unconfigured."
 	 return
       fi
    done
@@ -295,6 +293,7 @@ ftp -o /home/live/torbutton.xpi http://torbutton.torproject.org/dev/releases/tor
 cat >/home/live/.xinitrc <<EOF
 #!/bin/sh
 . /etc/X11/.xinitrc
+xset r on
 exec enlightenment_start
 EOF
 
@@ -373,4 +372,4 @@ rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
 
 # Create CD image
 cd $LOCAL_ROOT/..
-mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o stephan.iso -b cdbr -c boot.catalog livecd
+mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R.iso -b cdbr -c boot.catalog livecd
