@@ -39,6 +39,7 @@ export BUILD_ROOT=$BASE/build
 export MASTER_SITES=http://mirror.startek.ch
 export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
 
+test -d $LOCAL_ROOT && rm -rf $LOCAL_ROOT
 mkdir -p $LOCAL_ROOT
 mkdir -p $BUILD_ROOT
 
