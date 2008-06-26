@@ -27,7 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Variables
-export BASE=/home
+export BASE=/usr/ports
 
 export RELEASE=4.3
 export ARCH=i386
@@ -37,11 +37,17 @@ export LOCAL_ROOT=$BASE/livecd
 export BUILD_ROOT=$BASE/build
 
 export MASTER_SITES=http://mirror.startek.ch
-export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
 
+echo -n "Preparing build environment ... "
 test -d $LOCAL_ROOT && rm -rf $LOCAL_ROOT
 mkdir -p $LOCAL_ROOT
 mkdir -p $BUILD_ROOT
+mkdir -p $BUILD_ROOT/pkg_cache
+echo done
+
+echo -n 'Restoring PKG_CACHE ... '
+cp -pr $BUILD_ROOT/pkg_cache $LOCAL_ROOT/
+echo done
 
 # Get custom kernels
 install_custom_kernels() {
@@ -69,7 +75,9 @@ install_filesets() {
     do
         test -r $BUILD_ROOT/$i$R.tgz || \
              ftp -o $BUILD_ROOT/$i$R.tgz $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i$R.tgz
+        echo -n "Extracting $i ... "
         tar -C $LOCAL_ROOT -xzphf $BUILD_ROOT/$i$R.tgz
+        echo done
     done
 }
 
@@ -97,12 +105,21 @@ install_filesets
 prepare_filesystem
 install_fstab
 
+
 # Help chroot to resolve
 cp /etc/resolv.conf $LOCAL_ROOT/etc/
 
 # Customize system within chroot
+echo "Entering chroot in $LOCAL_ROOT."
 chroot $LOCAL_ROOT
 ldconfig
+
+# Install packages
+export PKG_CACHE=/pkg_cache
+export PKG_PATH=$PKG_CACHE/:http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
+echo $PKG_PATH
+pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep e-20071211p3
+
 echo "livecd.BSDanywhere.org" > /etc/myname
 perl -p -i -e 's/noname.my.domain noname/livecd.BSDanywhere.org livecd/g' /etc/hosts
 echo "boot /bsd.mp" > /etc/boot.conf
@@ -115,8 +132,6 @@ useradd -G wheel,operator,dialer -c "BSDanywhere Live CD Account" -d /home/live 
 perl -p -i -e 's/\Qlive:*************:1000\E/live::1000/g' /etc/master.passwd
 pwd_mkdb /etc/master.passwd
 
-# Install packages
-pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
 
 # Adjust /etc/rc for our needs
 RC=/etc/rc
@@ -366,22 +381,29 @@ chown -R live /home/live
 
 # Leave the chroot environment
 exit
+echo "Chroot in $LOCAL_ROOT left."
 
 # Prepare mfs filesystems by packing contents in tgz's
 for fs in var etc root home
 do
+    echo -n "Packaging up $fs ... "
     tar cphf - $fs | gzip -9 > $LOCAL_ROOT/stand/$fs.tgz
+    echo done
 done
 
 # Cleanup build environment
+echo -n 'Cleaning up build environment ... '
 rm $LOCAL_ROOT/etc/resolv.conf
+mv $LOCAL_ROOT/pkg_cache/* $BUILD_ROOT/pkg_cache/
+rmdir $LOCAL_ROOT/pkg_cache
+echo done
 
 # Preload mfs mounts
 for i in etc var; do cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i; done
 
 # To reedit the cd image, 'rm -rf var && cp -rp .mvar var'
-rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
+#rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
 
 # Create CD image
 cd $LOCAL_ROOT/..
-mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R.iso -b cdbr -c boot.catalog livecd
+#mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R.iso -b cdbr -c boot.catalog livecd
