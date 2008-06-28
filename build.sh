@@ -27,20 +27,33 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Variables
+export BASE=/home
+
 export RELEASE=4.3
 export ARCH=i386
 export R=$(echo $RELEASE | awk -F. '{print $1$2 }')
-export LOCAL_ROOT=/home/livecd
+
+export LOCAL_ROOT=$BASE/livecd
+export BUILD_ROOT=$BASE/build
+
 export MASTER_SITES=http://mirror.startek.ch
 export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
 
-mkdir $LOCAL_ROOT
+prepare_build() {
+    echo -n 'Preparing build environment ... '
+    test -d $LOCAL_ROOT && rm -rf $LOCAL_ROOT
+    mkdir -p $LOCAL_ROOT
+    mkdir -p $BUILD_ROOT
+    echo done
+}
 
 # Get custom kernels
 install_custom_kernels() {
     for i in bsd bsd.mp
     do
-        ftp -o $LOCAL_ROOT/$i $MASTER_SITES/BSDanywhere/$RELEASE/$ARCH/$i
+        test -r $BUILD_ROOT/$i || \
+             ftp -o $BUILD_ROOT/$i $MASTER_SITES/BSDanywhere/$RELEASE/$ARCH/$i
+        cp -p $BUILD_ROOT/$i $LOCAL_ROOT/
     done
 }
 
@@ -48,7 +61,9 @@ install_custom_kernels() {
 install_boot_files() {
     for i in cdbr cdboot bsd.rd
     do
-        ftp -o $LOCAL_ROOT/$i $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i
+        test -r $BUILD_ROOT/$i || \
+             ftp -o $BUILD_ROOT/$i $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i
+        cp -p $BUILD_ROOT/$i $LOCAL_ROOT/
     done
 }
 
@@ -56,16 +71,21 @@ install_boot_files() {
 install_filesets() {
     for i in base game man misc etc xbase xetc xfont xserv xshare
     do
-        ftp -o - $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i$R.tgz |\
-            tar -C $LOCAL_ROOT -xzphf -
+        test -r $BUILD_ROOT/$i$R.tgz || \
+             ftp -o $BUILD_ROOT/$i$R.tgz $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i$R.tgz
+        echo -n "Installing $i ... "
+        tar -C $LOCAL_ROOT -xzphf $BUILD_ROOT/$i$R.tgz
+        echo done
     done
 }
 
 # Create mfs directories and devices
 prepare_filesystem() {
+    echo -n 'Preparing file system layout ... '
     mkdir -p $LOCAL_ROOT/.msbin $LOCAL_ROOT/.mbin $LOCAL_ROOT/.musrlocal
     cd $LOCAL_ROOT/dev && ./MAKEDEV all && cd $LOCAL_ROOT
     cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/stand/
+    echo done
 }
 
 install_fstab() {
@@ -79,6 +99,7 @@ swap /home mfs rw,auto,-s=200000 0 0
 EOF
 }
 
+prepare_build
 install_custom_kernels
 install_boot_files
 install_filesets
@@ -104,7 +125,7 @@ perl -p -i -e 's/\Qlive:*************:1000\E/live::1000/g' /etc/master.passwd
 pwd_mkdb /etc/master.passwd
 
 # Install packages
-pkg_add iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
+pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
 
 # Adjust /etc/rc for our needs
 RC=/etc/rc
@@ -116,14 +137,12 @@ perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 # Prepare welcome screen
 cat >/etc/welcome <<EOF
 
-Welcome at BSDanywhere $RELEASE, the OpenBSD Live system at your fingertips!
+Welcome to BSDanywhere $RELEASE - enlightenment at your fingertips!
 
-Two ways to log on to the system are provided: 'live' and 'root'
-
-Log in as 'live' with empty password for the graphical environment. Access
-to administrative commands are granted using the 'sudo' command. Experts may
-also log in as 'root' without password, which will neither start a graphical
-environment nor any custom BSDanywhere scripts.
+You may now log in using either 'live' or 'root' as a user name. Both
+accounts have no default password set. If you'd like to set one, use the
+'passwd' program after you logged on. For 'live', a graphical environment
+will be launched. You may use the 'sudo' command for priviliged commands.
 
 EOF
 
@@ -251,7 +270,7 @@ sub_mfsmount() {
         then
             # /usr/local uses ~390M
             mount_mfs -s 900000 swap /.musrlocal
-            /bin/cp -rp /usr/local/* /.musrlocal
+            /bin/cp -rp /usr/local/bin /usr/local/sbin /.musrlocal
             perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /root/.profile
             perl -p -i -e 's#^(PATH=)(.*)#\$1/.musrlocal/bin:/.musrlocal/sbin:\$2#' /home/live/.profile
         fi
@@ -285,7 +304,7 @@ sub_timezone() {
 	    return
 	 fi
       else
-	 echo "Leaving timezone unconfigured"
+	 echo "Leaving timezone unconfigured."
 	 return
       fi
    done
@@ -486,14 +505,21 @@ exit
 # Prepare mfs filesystems by packing contents in tgz's
 for fs in var etc root home
 do
+    echo -n "Packaging $fs ... "
     tar cphf - $fs | gzip -9 > $LOCAL_ROOT/stand/$fs.tgz
+    echo done
 done
 
 # Cleanup build environment
 rm $LOCAL_ROOT/etc/resolv.conf
 
 # Preload mfs mounts
-for i in etc var; do cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i; done
+for i in etc var
+do
+    echo -n "Preloading $i ... "
+    cp -rp $LOCAL_ROOT/$i $LOCAL_ROOT/.m$i
+    echo done
+done
 
 # To reedit the cd image, 'rm -rf var && cp -rp .mvar var'
 rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
