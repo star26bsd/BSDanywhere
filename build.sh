@@ -353,7 +353,7 @@ sub_dorestore() {
 
 sub_restore() {
    usbdevs -d | grep umass >/dev/null
-   if [ $? -eq 0 ]
+   if [ \$? -eq 0 ]
    then
       echo -n "Do you want to restore data from an usbdrive (y/N)? "
       read restore
