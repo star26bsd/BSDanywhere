@@ -189,14 +189,14 @@ cat >$MKBACKUP <<EOF
 
 # function for backup
 sub_backup() {
-if [ -w /mnt ]
-then
-   cd /home/live
-   tar czf /mnt/BSDanywhere.tgz * .*
-else
-   echo "Can't write on /mnt!" >&2
-   exit 2
-fi
+    if [ -w /mnt ]
+    then
+       cd /home/live
+       tar czf /mnt/BSDanywhere.tgz * .*
+    else
+       echo "Can't write on /mnt!" >&2
+       exit 2
+    fi
 }
 
 mount | grep mnt
