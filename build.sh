@@ -248,16 +248,16 @@ cat >/etc/rc.local <<EOF
 
 echo -n 'starting local daemons:'
 
-if [ -x /usr/local/bin/tor ]; then
-     echo -n ' tor';
-     /usr/local/bin/tor >/dev/null 2>&1
-fi
+#if [ -x /usr/local/bin/tor ]; then
+#     echo -n ' tor';
+#     /usr/local/bin/tor >/dev/null 2>&1
+#fi
 
-if [ -x /usr/local/sbin/privoxy ]; then
-     echo -n ' privoxy';
-     /usr/local/sbin/privoxy --user _privoxy._privoxy \
-	/etc/privoxy/config >/dev/null 2>&1
-fi
+#if [ -x /usr/local/sbin/privoxy ]; then
+#     echo -n ' privoxy';
+#     /usr/local/sbin/privoxy --user _privoxy._privoxy \
+#	/etc/privoxy/config >/dev/null 2>&1
+#fi
 
 echo '.'
 
@@ -266,9 +266,9 @@ echo '.'
 sub_mfsmount() {
     if [ \$(sysctl -n hw.physmem) -gt 530000000 ]
     then
-        echo -n "Do you want to preload free memory to speed up BSDanywhere? (Y/n) "
+        echo -n "Do you want to preload free memory to speed up BSDanywhere? (N/y) "
         read doit
-        if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
+        if [ "\$doit" == "y" ] || [ "\$doit" == "Y" ] || [ "\$doit" == "yes" ] || [ "\$doit" == "Yes" ]
         then
 
             mount_mfs -s 300000 swap /mfs
@@ -415,9 +415,27 @@ xset r on
 exec enlightenment_start
 EOF
 
-# Ask for invokation of restore script on login of 'live'.
+# For 'live', we define a .kshrc which will be executed in .profile
+cat >/home/live/.kshrc <<EOF
+alias l='ls -alF'
+alias ll='ls -l'
+alias la='ls -la'
+alias ..='cd ..'
+alias ...='cd ..;cd..'
+
+bind '^[[3'=prefix-2
+bind '^[[3~'=delete-char-forward
+bind '^[OH'=beginning-of-line
+bind '^[OF'=end-of-line
+EOF
+
+# For 'live', we do some customization in .profile
 cat >>/home/live/.profile <<EOF
 
+export ENV=\$HOME/.kshrc
+export PS1='\u@\h:\w$ '
+
+# Ask for invokation of restore script on login of 'live'.
 sub_dorestore() {
    if [ -r /mnt/BSDanywhere.tgz ]
    then
@@ -544,4 +562,4 @@ rm $LOCAL_ROOT/etc/fbtab
 
 # Finally, create the CD image.
 cd $LOCAL_ROOT/..
-mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R.iso -b cdbr -c boot.catalog livecd
+mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog livecd
