@@ -143,6 +143,8 @@ perl -p -i -e 's@# XXX \(root now writeable\)@$&\necho -n "Creating device nodes
 perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\necho -n "Populating file systems:"; for i in var etc root home; do echo -n " \$i"; tar -C / -zxphf /stand/\$i.tgz; done; echo .@' $RC
 perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
+# time marker for backups (which file was modified)
+perl -p -i -e 's@^mount -uw /.*\n$@$&\ntouch /etc/timemark\n@' $RC
 
 # Create welcome screen.
 cat >/etc/welcome <<EOF
@@ -159,6 +161,80 @@ EOF
 # Trim motd.
 head -2 /etc/motd > /tmp/motd
 mv /tmp/motd /etc/motd
+
+# Backup Script for system directorys
+SYNCSYS=/usr/local/sbin/syncsys
+cat >$SYNCSYS <<EOF
+#!/bin/sh
+
+# Copyright (c) 2008 Rene Maroufi
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# This script make backups of changed files in /etc, /var and /root
+
+sub_backup() {
+   for FILE in /etc /var /root
+   do
+      find $FILE -cnewer /tmp/timemark | cpio -o > /mnt/sys.cio
+   done
+}
+
+mount | grep mnt
+if [ \$? -eq 0 ]
+then
+   echo "Something is already mounted on /mnt!" >&2
+   echo "Please umount /mnt first and then try again!" >&2
+   exit 1
+fi
+
+echo "This script overwrites previously written (old) backup data!"
+echo -n "Which device is your USB drive (without '/dev/', e.g. 'sd0')? "
+read usb
+
+flag=0
+disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
+if [ \$? -eq 0 ]
+then
+   sudo mount_msdos /dev/"\${usb}"i /mnt
+   sub_backup
+   sudo umount /mnt
+   flag=1
+fi
+if [ "\$flag" -eq 0 ]
+then
+   disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+   if [ \$? -eq 0 ]
+   then
+      sudo mount /dev/"\${usb}"a /mnt
+      sub_backup
+      sudo umount /mnt
+   else
+      echo "Can't find partition on device!" >&2
+      exit 3
+   fi
+fi
+
+EOF
+
+# make syncsys script executable
+chmod 555 $SYNCSYS
 
 # Backup script for an USB drive
 mkdir /home/live/bin
@@ -216,19 +292,19 @@ flag=0
 disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
 if [ \$? -eq 0 ]
 then
-   mount_msdos /dev/"\${usb}"i /mnt
+   sudo mount_msdos /dev/"\${usb}"i /mnt
    sub_backup
-   umount /mnt
+   sudo umount /mnt
    flag=1
 fi
-if [ \$flag -eq 0 ]
+if [ "\$flag" -eq 0 ]
 then
    disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
    if [ \$? -eq 0 ]
    then
-      mount /dev/"\${usb}"a /mnt
+      sudo mount /dev/"\${usb}"a /mnt
       sub_backup
-      umount /mnt
+      sudo umount /mnt
    else
       echo "Can't find partition on device!" >&2
       exit 3
@@ -327,18 +403,18 @@ sub_kblayout() {
     echo "Select keyboard layout *by number*:"
     select kbd in us de sg es it fr be jp nl ru uk sv no pt br hu tr dk
     do
-       if [ -n \$kbd ]; then
+       if [ -n "\$kbd" ]; then
 
           # set console mapping
-          /sbin/kbd \$kbd
+          /sbin/kbd "\$kbd"
 
           # write X11 mapping into site wide config
-	  if [ \$kbd = 'sg' ]; then
+	  if [ "\$kbd" = 'sg' ]; then
              xkbd=ch
-	  elif [ \$kbd = 'sv' ]; then
+	  elif [ "\$kbd" = 'sv' ]; then
              xkbd=se
           else
-             xkbd=\$kbd
+             xkbd="\$kbd"
           fi
 
           echo "/usr/X11R6/bin/setxkbmap \$xkbd &" > /etc/X11/.xinitrc
@@ -355,23 +431,23 @@ sub_kblayout() {
 sub_networks() {
    echo -n "Do you want to auto configure the network? (Y/n) "
    read net
-   if [ -z \$net ] || [ \$net = "y" ] || [ \$net = "Y" ] || [ \$net = "yes" ] || [ \$net = "Yes" ]
+   if [ -z "\$net" ] || [ "\$net" = "y" ] || [ "\$net" = "Y" ] || [ "\$net" = "yes" ] || [ "\$net" = "Yes" ]
    then
       for nic in \$(ifconfig | awk -F: '/^[a-z]+[0-9]: flags=/ { print \$1 }' | egrep -v "lo|enc|pflog")
       do
           echo -n "Do you want to configure \$nic for dhcp? (Y/n) "
           read if
-          if [ -z \$if ] || [ \$if = "y" ] || [ \$if = "Y" ] || [ \$if = "yes" ] || [ \$if = "Yes" ]
+          if [ -z "\$if" ] || [ "\$if" = "y" ] || [ "\$if" = "Y" ] || [ "\$if" = "yes" ] || [ "\$if" = "Yes" ]
           then
-              sudo ifconfig \$nic up
-              sudo dhclient -q \$nic &
-              sudo rtsol \$nic &
+              sudo ifconfig "\$nic" up
+              sudo dhclient -q "\$nic" &
+              sudo rtsol "\$nic" &
           fi
       done
 
       echo -n "Do you want to synchronize the time using ntpd? (Y/n) "
       read ntp
-      if [ -z \$ntp ] || [ \$ntp = "y" ] || [ \$ntp = "Y" ] || [ \$ntp = "yes" ] || [ \$ntp = "Yes" ]
+      if [ -z "\$ntp" ] || [ "\$ntp" = "y" ] || [ "\$ntp" = "Y" ] || [ "\$ntp" = "yes" ] || [ "\$ntp" = "Yes" ]
       then
           sudo ntpd -s &
       fi
@@ -453,7 +529,7 @@ liverestore() {
       read restore
       if [ ! -z \$restore ]
       then
-         if [ \$restore = "y" ] || [ \$restore = "yes" ] || [ \$restore = "Y" ] || [ \$restore = "YES" ] || [ \$restore = "Yes" ]
+         if [ "\$restore" = "y" ] || [ "\$restore" = "yes" ] || [ "\$restore" = "Y" ] || [ "\$restore" = "YES" ] || [ "\$restore" = "Yes" ]
          then
             echo -n "Which device is your USB drive (without '/dev/', e.g. 'sd0')? "
             read usb
