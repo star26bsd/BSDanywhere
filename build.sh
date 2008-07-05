@@ -145,6 +145,7 @@ perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 # time marker for backups (which file was modified)
 perl -p -i -e 's@^mount -uw /.*\n$@$&\ntouch /etc/timemark\n@' $RC
+perl -p -i -e 's@^touch /etc/timemark@$&\n\n# exec restore script early\n/etc/rcrestore\n@' $RC
 
 # Create welcome screen.
 cat >/etc/welcome <<EOF
@@ -161,6 +162,87 @@ EOF
 # Trim motd.
 head -2 /etc/motd > /tmp/motd
 mv /tmp/motd /etc/motd
+
+# Restore Script
+cat >/etc/rcrestore <<EOF
+#!/bin/sh
+
+# Copyright (c) 2008 Rene Maroufi
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# This is a resore script for data in /etc, /var and /root inside the BSDanywhere CD
+
+sub_restore() {
+   cd /
+   cpio -i < /mnt/sys.cio
+}
+
+STATUS=0
+
+usbdevs -d | grep umass >/dev/null
+if \$? -eq 0 ]
+then
+   echo "Do you want to restore system data?"
+   echo -n "If yes enter drive without /dev/ and partition  (e. g. 'sd0') or enter no"
+   read usbs
+   if [ "\$usbs" = "n" ] || [ "\$usbs" = "no" ] || [ "\$usbs" = "No" ] || [ "\$usbs" = "NO" ] || [ "\$usbs" = "N" ]
+   then
+      exit 0
+   fi
+   SFLAG=0
+   disklabel "\${usbs}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
+   if [ \$? -eq 0 ]
+   then
+      mount_msdos /dev/"\${usbs}"i /mnt
+      SFLAG=1
+      if [ -r /mnt/sys.cio ]
+      then
+	 sub_restore
+      else
+	 echo "Can't find sys.cio!" >&2
+	 STATUS=2
+      fi
+   fi
+   disklabel "\${usbs}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+   if [ \$? -eq 0 ]
+   then
+      mount /dev/"\${usbs}"a /mnt
+      SFLAG=1
+      if [ -r /mnt/sys.cio ]
+      then
+	 sub_restore
+      else
+	 echo "Can't find sys.cio!" >&2
+	 STATUS=2
+      fi
+   fi
+   if [ $SFLAG -eq 0 ]
+   then
+      echo "Can't find partition!" >&2
+      STATUS=1
+   fi
+fi
+
+exit $STATUS
+
+EOF
 
 # Backup Script for system directorys
 SYNCSYS=/usr/local/sbin/syncsys
