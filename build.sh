@@ -190,7 +190,7 @@ cat >$SYNCSYS <<EOF
 # This script make backups of changed files in /etc, /var and /root
 
 sub_backup() {
-   find /etc /var /root -cnewer /etc/timemark | cpio -o > /mnt/sys.cio
+   find /etc /var /root -newer /etc/timemark | cpio -o > /mnt/sys.cio
 }
 
 mount | grep mnt
