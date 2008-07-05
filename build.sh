@@ -190,10 +190,7 @@ cat >$SYNCSYS <<EOF
 # This script make backups of changed files in /etc, /var and /root
 
 sub_backup() {
-   for FILE in /etc /var /root
-   do
-      find \$FILE -cnewer /etc/timemark | cpio -o > /mnt/sys.cio
-   done
+   find /etc /var /root -cnewer /etc/timemark | cpio -o > /mnt/sys.cio
 }
 
 mount | grep mnt
@@ -212,9 +209,9 @@ flag=0
 disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
 if [ \$? -eq 0 ]
 then
-   sudo mount_msdos /dev/"\${usb}"i /mnt
+   mount_msdos /dev/"\${usb}"i /mnt
    sub_backup
-   sudo umount /mnt
+   umount /mnt
    flag=1
 fi
 if [ "\$flag" -eq 0 ]
@@ -222,9 +219,9 @@ then
    disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
    if [ \$? -eq 0 ]
    then
-      sudo mount /dev/"\${usb}"a /mnt
+      mount /dev/"\${usb}"a /mnt
       sub_backup
-      sudo umount /mnt
+      umount /mnt
    else
       echo "Can't find partition on device!" >&2
       exit 3
@@ -292,9 +289,9 @@ flag=0
 disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
 if [ \$? -eq 0 ]
 then
-   sudo mount_msdos /dev/"\${usb}"i /mnt
+   mount_msdos /dev/"\${usb}"i /mnt
    sub_backup
-   sudo umount /mnt
+   umount /mnt
    flag=1
 fi
 if [ "\$flag" -eq 0 ]
@@ -302,9 +299,9 @@ then
    disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
    if [ \$? -eq 0 ]
    then
-      sudo mount /dev/"\${usb}"a /mnt
+      mount /dev/"\${usb}"a /mnt
       sub_backup
-      sudo umount /mnt
+      umount /mnt
    else
       echo "Can't find partition on device!" >&2
       exit 3
@@ -537,9 +534,9 @@ liverestore() {
             disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
             if [ \$? -eq 0 ]
             then
-               mount_msdos /dev/"\${usb}"i /mnt
+               sudo mount_msdos /dev/"\${usb}"i /mnt
                sub_dorestore
-               umount /mnt
+               sudo umount /mnt
                flag=1
             fi
             if [ \$flag -eq 0 ]
@@ -547,9 +544,9 @@ liverestore() {
                disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
                if [ \$? -eq 0 ]
                then
-                  mount /dev/"\${usb}"a /mnt
+                  sudo mount /dev/"\${usb}"a /mnt
                   sub_dorestore
-                  umount /mnt
+                  sudo umount /mnt
                else
                   echo "Can't find correct partition on device: nothing restored!"
                fi
