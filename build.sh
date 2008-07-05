@@ -192,7 +192,7 @@ cat >$SYNCSYS <<EOF
 sub_backup() {
    for FILE in /etc /var /root
    do
-      find $FILE -cnewer /tmp/timemark | cpio -o > /mnt/sys.cio
+      find \$FILE -cnewer /tmp/timemark | cpio -o > /mnt/sys.cio
    done
 }
 
