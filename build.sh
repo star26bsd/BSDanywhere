@@ -134,6 +134,7 @@ perl -p -i -e 's/\Qlive:*************:1000\E/live::1000/g' /etc/master.passwd
 pwd_mkdb /etc/master.passwd
 
 # Download and install packages.
+echo
 pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
 
 # To create /dev nodes and to untar all pre-packaged file systems
