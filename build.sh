@@ -145,7 +145,7 @@ perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
 # time marker for backups (which file was modified)
 perl -p -i -e 's@^mount -uw /.*\n$@$&\ntouch /etc/timemark\n@' $RC
-perl -p -i -e 's@^touch /etc/timemark@$&\n\n# exec restore script early\n/etc/rcrestore\n@' $RC
+perl -p -i -e 's@/MAKEDEV all; echo done$@$&\n\n# exec restore script early\n/etc/rcrestore\n@' $RC
 
 # Create welcome screen.
 cat >/etc/welcome <<EOF
