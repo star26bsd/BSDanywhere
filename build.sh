@@ -244,6 +244,9 @@ exit $STATUS
 
 EOF
 
+# make restore script executable
+chmod 555 /etc/rcrestore
+
 # Backup Script for system directorys
 SYNCSYS=/usr/local/sbin/syncsys
 cat >$SYNCSYS <<EOF
