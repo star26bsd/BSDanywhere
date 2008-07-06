@@ -185,17 +185,23 @@ cat >/etc/rcrestore <<EOF
 # This is a resore script for data in /etc, /var and /root inside the BSDanywhere CD
 
 sub_restore() {
-   cd /
-   cpio -i < /mnt/sys.cio
+   if [ -r /mnt/sys.cio ]
+   then
+      cd /
+      cpio -i < /mnt/sys.cio
+   else
+      echo "Can't find sys.cio!" >&2
+      STATUS=2
+   fi
 }
 
 STATUS=0
 
 usbdevs -d | grep umass >/dev/null
-if \$? -eq 0 ]
+if [ \$? -eq 0 ]
 then
    echo "Do you want to restore system data?"
-   echo -n "If yes enter drive without /dev/ and partition  (e. g. 'sd0') or enter no"
+   echo -n "If yes enter drive without /dev/ and partition  (e. g. 'sd0') or enter no: "
    read usbs
    if [ "\$usbs" = "n" ] || [ "\$usbs" = "no" ] || [ "\$usbs" = "No" ] || [ "\$usbs" = "NO" ] || [ "\$usbs" = "N" ]
    then
@@ -207,35 +213,25 @@ then
    then
       mount_msdos /dev/"\${usbs}"i /mnt
       SFLAG=1
-      if [ -r /mnt/sys.cio ]
-      then
-	 sub_restore
-      else
-	 echo "Can't find sys.cio!" >&2
-	 STATUS=2
-      fi
+      sub_restore
+      umount /mnt
    fi
    disklabel "\${usbs}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
    if [ \$? -eq 0 ]
    then
       mount /dev/"\${usbs}"a /mnt
       SFLAG=1
-      if [ -r /mnt/sys.cio ]
-      then
-	 sub_restore
-      else
-	 echo "Can't find sys.cio!" >&2
-	 STATUS=2
-      fi
+      sub_restore
+      umount /mnt
    fi
-   if [ $SFLAG -eq 0 ]
+   if [ \$SFLAG -eq 0 ]
    then
       echo "Can't find partition!" >&2
       STATUS=1
    fi
 fi
 
-exit $STATUS
+exit \$STATUS
 
 EOF
 
