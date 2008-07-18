@@ -25,8 +25,8 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
+#
+#
 # USAGE INFORMATION
 # Call this script with 'cat build.sh | ksh'. Do NOT invoke build.sh
 # directly as this will overwrite your entire / file system! Also
@@ -134,6 +134,7 @@ perl -p -i -e 's/\Qlive:*************:1000\E/live::1000/g' /etc/master.passwd
 pwd_mkdb /etc/master.passwd
 
 # Download and install packages.
+echo
 pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
 
 # To create /dev nodes and to untar all pre-packaged file systems
@@ -143,6 +144,9 @@ perl -p -i -e 's@# XXX \(root now writeable\)@$&\necho -n "Creating device nodes
 perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\necho -n "Populating file systems:"; for i in var etc root home; do echo -n " \$i"; tar -C / -zxphf /stand/\$i.tgz; done; echo .@' $RC
 perl -p -i -e 's#^rm -f /fastboot##' $RC
 perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
+# time marker for backups (which file was modified)
+perl -p -i -e 's@^mount -uw /.*\n$@$&\ntouch /etc/timemark\n@' $RC
+perl -p -i -e 's@/MAKEDEV all; echo done$@$&\n\n# exec restore script early\n/etc/rcrestore\n@' $RC
 
 # Create welcome screen.
 cat >/etc/welcome <<EOF
@@ -156,39 +160,172 @@ will be launched. You may use the 'sudo' command for priviliged commands.
 
 EOF
 
-# Trim motd.
+# Trim message of the day.
 head -2 /etc/motd > /tmp/motd
 mv /tmp/motd /etc/motd
 
-# Backup script for an USB drive
+# System restore script.
+cat >/etc/rcrestore <<EOF
+#!/bin/sh
+#
+# Copyright (c) 2008 Rene Maroufi
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+# INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+# LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+# OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+#
+# This script restores /etc, /var and /root during BSDanywhere's system boot.
+
+sub_restore() {
+   if [ -r /mnt/sys.cio ]
+   then
+      cd /
+      cpio -i < /mnt/sys.cio
+   else
+      echo "Can't find sys.cio!" >&2
+      STATUS=2
+   fi
+}
+
+STATUS=0
+
+usbdevs -d | grep umass >/dev/null
+if [ \$? -eq 0 ]
+then
+   echo "Do you want to restore system data?"
+   echo -n "If yes enter drive without /dev/ and partition  (e. g. 'sd0') or enter no: "
+   read usbs
+   if [ "\$usbs" = "n" ] || [ "\$usbs" = "no" ] || [ "\$usbs" = "No" ] || [ "\$usbs" = "NO" ] || [ "\$usbs" = "N" ]
+   then
+      exit 0
+   fi
+   SFLAG=0
+   disklabel "\${usbs}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
+   if [ \$? -eq 0 ]
+   then
+      mount_msdos /dev/"\${usbs}"i /mnt
+      SFLAG=1
+      sub_restore
+      umount /mnt
+   fi
+   disklabel "\${usbs}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+   if [ \$? -eq 0 ]
+   then
+      mount /dev/"\${usbs}"a /mnt
+      SFLAG=1
+      sub_restore
+      umount /mnt
+   fi
+   if [ \$SFLAG -eq 0 ]
+   then
+      echo "Can't find partition!" >&2
+      STATUS=1
+   fi
+fi
+
+exit \$STATUS
+
+EOF
+
+# Make restore script executable.
+chmod 555 /etc/rcrestore
+
+# Backup script for system directories.
+SYNCSYS=/usr/local/sbin/syncsys
+cat >$SYNCSYS <<EOF
+#!/bin/sh
+#
+# Copyright (c) 2008 Rene Maroufi
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+# INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+# LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+# OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+#
+# This script creates a backup of modified files in /etc, /var and /root.
+
+sub_backup() {
+   find /etc /var /root -newer /etc/timemark | cpio -o > /mnt/sys.cio
+}
+
+mount | grep mnt
+if [ \$? -eq 0 ]
+then
+   echo "Something is already mounted on /mnt!" >&2
+   echo "Please umount /mnt first and then try again!" >&2
+   exit 1
+fi
+
+echo "This script overwrites previously written (old) backup data!"
+echo -n "Which device is your USB drive (without '/dev/', e.g. 'sd0')? "
+read usb
+
+flag=0
+disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
+if [ \$? -eq 0 ]
+then
+   mount_msdos /dev/"\${usb}"i /mnt
+   sub_backup
+   umount /mnt
+   flag=1
+fi
+if [ "\$flag" -eq 0 ]
+then
+   disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
+   if [ \$? -eq 0 ]
+   then
+      mount /dev/"\${usb}"a /mnt
+      sub_backup
+      umount /mnt
+   else
+      echo "Can't find partition on device!" >&2
+      exit 3
+   fi
+fi
+
+EOF
+
+# Make syncsys script executable.
+chmod 555 $SYNCSYS
+
+# Backup script for a USB drive.
 mkdir /home/live/bin
 MKBACKUP=/home/live/bin/mkbackup
 cat >$MKBACKUP <<EOF
 #!/bin/sh
-
+#
 # Copyright (c) 2008 Rene Maroufi
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+# INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+# LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+# OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+#
 # This script will backup or restore live's home data on a USB stick.
 
-# function for backup
+# Function for backup.
 sub_backup() {
     if [ -w /mnt ]
     then
@@ -221,7 +358,7 @@ then
    umount /mnt
    flag=1
 fi
-if [ \$flag -eq 0 ]
+if [ "\$flag" -eq 0 ]
 then
    disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
    if [ \$? -eq 0 ]
@@ -248,16 +385,16 @@ cat >/etc/rc.local <<EOF
 
 echo -n 'starting local daemons:'
 
-if [ -x /usr/local/bin/tor ]; then
-     echo -n ' tor';
-     /usr/local/bin/tor >/dev/null 2>&1
-fi
+#if [ -x /usr/local/bin/tor ]; then
+#     echo -n ' tor';
+#     /usr/local/bin/tor >/dev/null 2>&1
+#fi
 
-if [ -x /usr/local/sbin/privoxy ]; then
-     echo -n ' privoxy';
-     /usr/local/sbin/privoxy --user _privoxy._privoxy \
-	/etc/privoxy/config >/dev/null 2>&1
-fi
+#if [ -x /usr/local/sbin/privoxy ]; then
+#     echo -n ' privoxy';
+#     /usr/local/sbin/privoxy --user _privoxy._privoxy \
+#	/etc/privoxy/config >/dev/null 2>&1
+#fi
 
 echo '.'
 
@@ -266,9 +403,9 @@ echo '.'
 sub_mfsmount() {
     if [ \$(sysctl -n hw.physmem) -gt 530000000 ]
     then
-        echo -n "Do you want to preload free memory to speed up BSDanywhere? (Y/n) "
+        echo -n "Do you want to preload free memory to speed up BSDanywhere? (N/y) "
         read doit
-        if [ -z \$doit ] || [ \$doit = "y" ] || [ \$doit = "Y" ] || [ \$doit = "yes" ] || [ \$doit = "Yes" ]
+        if [ "\$doit" == "y" ] || [ "\$doit" == "Y" ] || [ "\$doit" == "yes" ] || [ "\$doit" == "Yes" ]
         then
 
             mount_mfs -s 300000 swap /mfs
@@ -327,18 +464,18 @@ sub_kblayout() {
     echo "Select keyboard layout *by number*:"
     select kbd in us de sg es it fr be jp nl ru uk sv no pt br hu tr dk
     do
-       if [ -n \$kbd ]; then
+       if [ -n "\$kbd" ]; then
 
           # set console mapping
-          /sbin/kbd \$kbd
+          /sbin/kbd "\$kbd"
 
           # write X11 mapping into site wide config
-	  if [ \$kbd = 'sg' ]; then
+	  if [ "\$kbd" = 'sg' ]; then
              xkbd=ch
-	  elif [ \$kbd = 'sv' ]; then
+	  elif [ "\$kbd" = 'sv' ]; then
              xkbd=se
           else
-             xkbd=\$kbd
+             xkbd="\$kbd"
           fi
 
           echo "/usr/X11R6/bin/setxkbmap \$xkbd &" > /etc/X11/.xinitrc
@@ -355,23 +492,23 @@ sub_kblayout() {
 sub_networks() {
    echo -n "Do you want to auto configure the network? (Y/n) "
    read net
-   if [ -z \$net ] || [ \$net = "y" ] || [ \$net = "Y" ] || [ \$net = "yes" ] || [ \$net = "Yes" ]
+   if [ -z "\$net" ] || [ "\$net" = "y" ] || [ "\$net" = "Y" ] || [ "\$net" = "yes" ] || [ "\$net" = "Yes" ]
    then
       for nic in \$(ifconfig | awk -F: '/^[a-z]+[0-9]: flags=/ { print \$1 }' | egrep -v "lo|enc|pflog")
       do
           echo -n "Do you want to configure \$nic for dhcp? (Y/n) "
           read if
-          if [ -z \$if ] || [ \$if = "y" ] || [ \$if = "Y" ] || [ \$if = "yes" ] || [ \$if = "Yes" ]
+          if [ -z "\$if" ] || [ "\$if" = "y" ] || [ "\$if" = "Y" ] || [ "\$if" = "yes" ] || [ "\$if" = "Yes" ]
           then
-              sudo ifconfig \$nic up
-              sudo dhclient -q \$nic &
-              sudo rtsol \$nic &
+              sudo ifconfig "\$nic" up
+              sudo dhclient -q "\$nic" &
+              sudo rtsol "\$nic" &
           fi
       done
 
       echo -n "Do you want to synchronize the time using ntpd? (Y/n) "
       read ntp
-      if [ -z \$ntp ] || [ \$ntp = "y" ] || [ \$ntp = "Y" ] || [ \$ntp = "yes" ] || [ \$ntp = "Yes" ]
+      if [ -z "\$ntp" ] || [ "\$ntp" = "y" ] || [ "\$ntp" = "Y" ] || [ "\$ntp" = "yes" ] || [ "\$ntp" = "Yes" ]
       then
           sudo ntpd -s &
       fi
@@ -415,9 +552,27 @@ xset r on
 exec enlightenment_start
 EOF
 
-# Ask for invokation of restore script on login of 'live'.
+# For 'live', we define a .kshrc which will be executed in .profile
+cat >/home/live/.kshrc <<EOF
+alias l='ls -alF'
+alias ll='ls -l'
+alias la='ls -la'
+alias ..='cd ..'
+alias ...='cd ..;cd..'
+
+bind '^[[3'=prefix-2
+bind '^[[3~'=delete-char-forward
+bind '^[OH'=beginning-of-line
+bind '^[OF'=end-of-line
+EOF
+
+# For 'live', we do some customization in .profile
 cat >>/home/live/.profile <<EOF
 
+export ENV=\$HOME/.kshrc
+export PS1='\u@\h:\w$ '
+
+# Ask for invokation of restore script on login of 'live'.
 sub_dorestore() {
    if [ -r /mnt/BSDanywhere.tgz ]
    then
@@ -435,7 +590,7 @@ liverestore() {
       read restore
       if [ ! -z \$restore ]
       then
-         if [ \$restore = "y" ] || [ \$restore = "yes" ] || [ \$restore = "Y" ] || [ \$restore = "YES" ] || [ \$restore = "Yes" ]
+         if [ "\$restore" = "y" ] || [ "\$restore" = "yes" ] || [ "\$restore" = "Y" ] || [ "\$restore" = "YES" ] || [ "\$restore" = "Yes" ]
          then
             echo -n "Which device is your USB drive (without '/dev/', e.g. 'sd0')? "
             read usb
@@ -443,9 +598,9 @@ liverestore() {
             disklabel "\${usb}" 2>/dev/null | grep MSDOS | grep i: >/dev/null
             if [ \$? -eq 0 ]
             then
-               mount_msdos /dev/"\${usb}"i /mnt
+               sudo mount_msdos /dev/"\${usb}"i /mnt
                sub_dorestore
-               umount /mnt
+               sudo umount /mnt
                flag=1
             fi
             if [ \$flag -eq 0 ]
@@ -453,9 +608,9 @@ liverestore() {
                disklabel "\${usb}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null
                if [ \$? -eq 0 ]
                then
-                  mount /dev/"\${usb}"a /mnt
+                  sudo mount /dev/"\${usb}"a /mnt
                   sub_dorestore
-                  umount /mnt
+                  sudo umount /mnt
                else
                   echo "Can't find correct partition on device: nothing restored!"
                fi
@@ -544,4 +699,4 @@ rm $LOCAL_ROOT/etc/fbtab
 
 # Finally, create the CD image.
 cd $LOCAL_ROOT/..
-mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R.iso -b cdbr -c boot.catalog livecd
+mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog livecd
