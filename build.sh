@@ -46,6 +46,16 @@ export BUILD_ROOT=$BASE/build
 export MASTER_SITES=http://mirror.startek.ch
 export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
 
+examine_environment() {
+    echo -n "Checking if OpenBSD:\t"
+         [ $(uname) = "OpenBSD"  ] && echo OpenBSD "(ok)" || exit 1
+
+    echo -n "Checking OS release:\t"
+         [ $(uname -r) = "$RELEASE" ] && echo "$RELEASE (ok)" || exit 1
+
+    #TODO: check for BASE not mounted nosuid, nodev
+}
+
 prepare_build() {
     echo -n 'Preparing build environment ... '
     test -d $LOCAL_ROOT && rm -rf $LOCAL_ROOT
@@ -107,6 +117,7 @@ swap /home mfs rw,auto,-s=200000 0 0
 EOF
 }
 
+examine_environment
 prepare_build
 install_custom_kernels
 install_boot_files
