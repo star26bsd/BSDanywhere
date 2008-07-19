@@ -32,9 +32,10 @@
 # directly as this will overwrite your entire / file system! Also
 # ensure $BASE resides on file system mounted without restrictions.
 
-
+#
 # Variables
-export BASE=/home
+#
+export BASE=/specify/base/path
 
 export RELEASE=4.3
 export ARCH=i386
@@ -46,14 +47,64 @@ export BUILD_ROOT=$BASE/build
 export MASTER_SITES=http://mirror.startek.ch
 export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
 
+export THIS_OS=$(uname)
+export THIS_ARCH=$(uname -m)
+export THIS_RELEASE=$(uname -r)
+
+#
+# Functions go first.
+#
 examine_environment() {
-    echo -n "Checking if OpenBSD:\t"
-         [ $(uname) = "OpenBSD"  ] && echo OpenBSD "(ok)" || exit 1
 
-    echo -n "Checking OS release:\t"
-         [ $(uname -r) = "$RELEASE" ] && echo "$RELEASE (ok)" || exit 1
+        echo -n 'This user: '
+        if [ "$USER" = 'root' ]; then
+            echo 'root (ok)'
+        else
+            echo "$USER (NOT ok)"
+            return 1
+        fi
 
-    #TODO: check for BASE not mounted nosuid, nodev
+        echo -n 'This OS: '
+        if [ "$THIS_OS" = 'OpenBSD' ]; then
+            echo 'OpenBSD (ok)'
+        else
+            echo "$THIS_OS (NOT ok)"
+            return 1
+        fi
+
+        echo -n 'This arch: '
+        if [ "$THIS_ARCH" = "$ARCH" ]; then
+            echo "$ARCH (ok)"
+        else
+            echo "$THIS_ARCH (NOT ok)"
+            return 1
+        fi
+
+        echo -n 'This release: '
+        if [ "$THIS_RELEASE" = "$RELEASE" ]; then
+            echo "$RELEASE (ok)"
+        else 
+            echo "$THIS_RELEASE (NOT ok)"
+            return 1
+        fi
+
+        echo -n "$BASE "
+        if [ -d "$BASE" ]; then
+            echo 'exists (ok)'
+        else
+            echo "doesn't exist (NOT ok)"
+            return 1
+        fi
+
+        echo -n "$BASE "
+        touch "$BASE/test" 
+        if [ $? = '0'  ]; then 
+            echo 'is writeable (ok)'
+            rm $BASE/test
+        else
+            echo "isn't writable (NOT ok)"
+            return 1
+        fi
 }
 
 prepare_build() {
@@ -128,7 +179,9 @@ install_fstab
 # Help chroot to find a name server.
 cp /etc/resolv.conf $LOCAL_ROOT/etc/
 
-# Customize system from within chroot.
+#
+# Enter change-root and customize system within.
+#
 chroot $LOCAL_ROOT
 ldconfig
 echo "livecd.BSDanywhere.org" > /etc/myname
