@@ -50,4 +50,4 @@ liverestore() {
 }
 
 liverestore
-
+startx
