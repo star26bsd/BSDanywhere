@@ -526,9 +526,11 @@ sub_timezone() {
 # Ask for setting the keyboard layout and pre-set the X11 layout, too.
 sub_kblayout() {
     echo "Select keyboard layout *by number*:"
-    select kbd in $(kbd -l | egrep '^[a-z].$')
+    select kbd in \$(kbd -l | egrep '^[a-z].$')
     do
-       if [ -n "\$kbd" ]; then
+       # validate input
+       echo \$kbd | egrep -q '^[a-z].$'
+       if [ "\$?" = '0' ]; then
 
           # set console mapping
           /sbin/kbd "\$kbd"
@@ -545,8 +547,6 @@ sub_kblayout() {
           echo "/usr/X11R6/bin/setxkbmap \$xkbd &" > /etc/X11/.xinitrc
           break
 
-       else
-          print "Invalid number, leaving 'us' keyboard layout."
        fi
     done
 }
