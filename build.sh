@@ -526,7 +526,7 @@ sub_timezone() {
 # Ask for setting the keyboard layout and pre-set the X11 layout, too.
 sub_kblayout() {
     echo "Select keyboard layout *by number*:"
-    select kbd in us de sg es it fr be jp nl ru uk sv no pt br hu tr dk
+    select kbd in $(kbd -l | egrep '^[a-z].$')
     do
        if [ -n "\$kbd" ]; then
 
