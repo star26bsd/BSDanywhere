@@ -1,1 +1,1 @@
-livecd.BSDanywhere.org
+live.BSDanywhere.org
