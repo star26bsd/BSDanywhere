@@ -178,25 +178,26 @@ prepare_filesystem
 # Help chroot to find a name server.
 cp /etc/resolv.conf $IMAGE_ROOT/etc/
 
-# Copy template files.
+# Install modified OpenBSD template files.
 install -o root -g wheel -m 644 $CWD/etc_fstab.tpl $IMAGE_ROOT/etc/fstab
-install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
 install -o root -g wheel -m 644 $CWD/etc_myname.tpl $IMAGE_ROOT/etc/myname
 install -o root -g wheel -m 644 $CWD/etc_motd.tpl $IMAGE_ROOT/etc/motd
 install -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
 install -o root -g wheel -m 644 $CWD/etc_hosts.tpl $IMAGE_ROOT/etc/hosts
-install -o root -g wheel -m 644 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
+install -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT/etc/sysctl.conf
 install -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
-install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
 install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
+
+# Install BSDanywhere specific template files.
+install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
+install -o root -g wheel -m 644 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
+install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
 
 #
 # Enter change-root and customize system within.
 #
 chroot $IMAGE_ROOT
 ldconfig
-echo "machdep.allowaperture=2" >> /etc/sysctl.conf
-echo "net.inet6.ip6.accept_rtadv=1" >> /etc/sysctl.conf
 echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 
 # Create 'live' account with an empty password.
