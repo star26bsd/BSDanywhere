@@ -41,12 +41,13 @@ export RELEASE=4.3
 export ARCH=i386
 export R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 
-export LOCAL_ROOT=$BASE/livecd
-export BUILD_ROOT=$BASE/build
+export IMAGE_ROOT=$BASE/livecd
+export CACHE_ROOT=$BASE/cache
 
 export MASTER_SITES=http://mirror.startek.ch
 export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/e17/
 
+export CWD=$(pwd)
 export THIS_OS=$(uname)
 export THIS_ARCH=$(uname -m)
 export THIS_RELEASE=$(uname -r)
@@ -117,9 +118,9 @@ examine_environment() {
 
 prepare_build() {
     echo -n 'Preparing build environment ... '
-    test -d $LOCAL_ROOT && rm -rf $LOCAL_ROOT
-    mkdir -p $LOCAL_ROOT
-    mkdir -p $BUILD_ROOT
+    test -d $IMAGE_ROOT && rm -rf $IMAGE_ROOT
+    mkdir -p $IMAGE_ROOT
+    mkdir -p $CACHE_ROOT
     echo done
 }
 
@@ -127,9 +128,9 @@ prepare_build() {
 install_custom_kernels() {
     for i in bsd bsd.mp
     do
-        test -r $BUILD_ROOT/$i || \
-             ftp -o $BUILD_ROOT/$i $MASTER_SITES/BSDanywhere/$RELEASE/$ARCH/$i
-        cp -p $BUILD_ROOT/$i $LOCAL_ROOT/
+        test -r $CACHE_ROOT/$i || \
+             ftp -o $CACHE_ROOT/$i $MASTER_SITES/BSDanywhere/$RELEASE/$ARCH/$i
+        cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
     done
 }
 
@@ -137,9 +138,9 @@ install_custom_kernels() {
 install_boot_files() {
     for i in cdbr cdboot bsd.rd
     do
-        test -r $BUILD_ROOT/$i || \
-             ftp -o $BUILD_ROOT/$i $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i
-        cp -p $BUILD_ROOT/$i $LOCAL_ROOT/
+        test -r $CACHE_ROOT/$i || \
+             ftp -o $CACHE_ROOT/$i $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i
+        cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
     done
 }
 
@@ -147,10 +148,10 @@ install_boot_files() {
 install_filesets() {
     for i in base game man misc etc xbase xetc xfont xserv xshare
     do
-        test -r $BUILD_ROOT/$i$R.tgz || \
-             ftp -o $BUILD_ROOT/$i$R.tgz $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i$R.tgz
+        test -r $CACHE_ROOT/$i$R.tgz || \
+             ftp -o $CACHE_ROOT/$i$R.tgz $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i$R.tgz
         echo -n "Installing $i ... "
-        tar -C $LOCAL_ROOT -xzphf $BUILD_ROOT/$i$R.tgz
+        tar -C $IMAGE_ROOT -xzphf $CACHE_ROOT/$i$R.tgz
         echo done
     done
 }
@@ -159,9 +160,9 @@ install_filesets() {
 # have it available for execution within mfs during boot (/dev will be overmounted).
 prepare_filesystem() {
     echo -n 'Preparing file system layout ... '
-    mkdir $LOCAL_ROOT/mfs
-    cd $LOCAL_ROOT/dev && ./MAKEDEV all && cd $LOCAL_ROOT
-    cp $LOCAL_ROOT/dev/MAKEDEV $LOCAL_ROOT/stand/
+    mkdir $IMAGE_ROOT/mfs
+    cd $IMAGE_ROOT/dev && ./MAKEDEV all && cd $IMAGE_ROOT
+    cp $IMAGE_ROOT/dev/MAKEDEV $IMAGE_ROOT/stand/
     echo done
 }
 
@@ -175,22 +176,22 @@ install_filesets
 prepare_filesystem
 
 # Help chroot to find a name server.
-cp /etc/resolv.conf $LOCAL_ROOT/etc/
+cp /etc/resolv.conf $IMAGE_ROOT/etc/
 
 # Copy template files.
-install -o root -g wheel -m 644 $BASE/etc_fstab.tpl $LOCAL_ROOT/etc/fstab
-install -o root -g wheel -m 644 $BASE/etc_welcome.tpl $LOCAL_ROOT/etc/welcome
-install -o root -g wheel -m 644 $BASE/etc_myname.tpl $LOCAL_ROOT/etc/myname
-install -o root -g wheel -m 644 $BASE/etc_motd.tpl $LOCAL_ROOT/etc/motd
-install -o root -g wheel -m 644 $BASE/etc_boot.conf.tpl $LOCAL_ROOT/etc/boot.conf
-install -o root -g wheel -m 644 $BASE/etc_rc.restore.tpl $LOCAL_ROOT/etc/rc.restore
-install -o root -g wheel -m 755 $BASE/etc_rc.local.tpl $LOCAL_ROOT/etc/rc.local 
-install -o root -g wheel -m 755 $BASE/usr_local_sbin_syncsys.tpl $LOCAL_ROOT/usr/local/sbin/syncsys
+install -o root -g wheel -m 644 $CWD/etc_fstab.tpl $IMAGE_ROOT/etc/fstab
+install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
+install -o root -g wheel -m 644 $CWD/etc_myname.tpl $IMAGE_ROOT/etc/myname
+install -o root -g wheel -m 644 $CWD/etc_motd.tpl $IMAGE_ROOT/etc/motd
+install -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
+install -o root -g wheel -m 644 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
+install -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
+install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
 
 #
 # Enter change-root and customize system within.
 #
-chroot $LOCAL_ROOT
+chroot $IMAGE_ROOT
 ldconfig
 perl -p -i -e 's/noname.my.domain noname/livecd.BSDanywhere.org livecd/g' /etc/hosts
 echo "machdep.allowaperture=2" >> /etc/sysctl.conf
@@ -226,34 +227,32 @@ ftp -o /home/live/torbutton.xpi http://torbutton.torproject.org/dev/releases/tor
 exit
 
 # Install those template files that need prerequisites.
-install -d -o 1000 -g 10 -m 555 $BASE/home_live_bin_mkbackup.tpl $LOCAL_ROOT/home/live/bin/mkbackup
-install -d -o 1000 -g 10 -m 644 $BASE/home_live_.profile.tpl $LOCAL_ROOT/home/live/.profile
-install -d -o 1000 -g 10 -m 644 $BASE/home_live_.kshrc.tpl $LOCAL_ROOT/home/live/.kshrc
-install -d -o 1000 -g 10 -m 644 $BASE/home_live_.xinitrc.tpl $LOCAL_ROOT/home/live/.xinitrc
-install -d -o root -g wheel -m 644 $BASE/etc_privoxy_config $LOCAL_ROOT/etc/privoxy/config
-
-# E17 customization.
-install -d -o 1000 -g 10 -m 644 $BASE/home_live_.e_e_applications_menu_favorite.menu.tpl $LOCAL_ROOT/home/live/.e/e/applications/menu/favorite.menu
-install -d -o 1000 -g 10 -m 644 $BASE/home_live_.e_e_applications_bar_default_.order.tpl $LOCAL_ROOT/home/live/.e/e/applications/bar/default/.order
-install -d -o root -g wheel -m 644 $BASE/usr_local_share_applications_xterm.desktop.tpl $LOCAL_ROOT/usr/local/share/applications/xterm.desktop
+install -d -o 1000 -g 10 -m 555 $CWD/home_live_bin_mkbackup.tpl $IMAGE_ROOT/home/live/bin/mkbackup
+install -d -o 1000 -g 10 -m 644 $CWD/home_live_.profile.tpl $IMAGE_ROOT/home/live/.profile
+install -d -o 1000 -g 10 -m 644 $CWD/home_live_.kshrc.tpl $IMAGE_ROOT/home/live/.kshrc
+install -d -o 1000 -g 10 -m 644 $CWD/home_live_.xinitrc.tpl $IMAGE_ROOT/home/live/.xinitrc
+install -d -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_menu_favorite.menu.tpl $IMAGE_ROOT/home/live/.e/e/applications/menu/favorite.menu
+install -d -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_bar_default_.order.tpl $IMAGE_ROOT/home/live/.e/e/applications/bar/default/.order
+install -d -o root -g wheel -m 644 $CWD/usr_local_share_applications_xterm.desktop.tpl $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
+install -d -o root -g wheel -m 644 $CWD/etc_privoxy_config $IMAGE_ROOT/etc/privoxy/config
 
 # Prepare to-be-mfs file systems by packaging their directories into
 # individual tgz's. They will be untar'ed on each boot by /etc/rc.
 for fs in var etc root home
 do
     echo -n "Packaging $fs ... "
-    tar cphf - $fs | gzip -9 > $LOCAL_ROOT/stand/$fs.tgz
+    tar cphf - $fs | gzip -9 > $IMAGE_ROOT/stand/$fs.tgz
     echo done
 done
 
 # Cleanup build environment.
-rm $LOCAL_ROOT/etc/resolv.conf
+rm $IMAGE_ROOT/etc/resolv.conf
 
 # To save space on CD, we clean out what is not needed to boot.
-rm -r $LOCAL_ROOT/var/* && ln -s /var/tmp $LOCAL_ROOT/tmp
-rm -r $LOCAL_ROOT/home/*
-rm $LOCAL_ROOT/etc/fbtab
+rm -r $IMAGE_ROOT/var/* && ln -s /var/tmp $IMAGE_ROOT/tmp
+rm -r $IMAGE_ROOT/home/*
+rm $IMAGE_ROOT/etc/fbtab
 
 # Finally, create the CD image.
-cd $LOCAL_ROOT/..
+cd $IMAGE_ROOT/..
 mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog livecd
