@@ -175,7 +175,7 @@ install -o root -g wheel -m 644 $BASE/etc_motd.tpl $LOCAL_ROOT/etc/motd
 install -o root -g wheel -m 644 $BASE/etc_boot.conf.tpl $LOCAL_ROOT/etc/boot.conf
 install -o root -g wheel -m 644 $BASE/etc_rc.restore.tpl $LOCAL_ROOT/etc/rc.restore
 install -o root -g wheel -m 755 $BASE/etc_rc.local.tpl $LOCAL_ROOT/etc/rc.local 
-install -o root -g wheel -m 755 $BASE/usr_local_sbin_syncsys $LOCAL_ROOT/usr/local/sbin/syncsys
+install -o root -g wheel -m 755 $BASE/usr_local_sbin_syncsys.tpl $LOCAL_ROOT/usr/local/sbin/syncsys
 
 #
 # Enter change-root and customize system within.
@@ -216,15 +216,15 @@ ftp -o /home/live/torbutton.xpi http://torbutton.torproject.org/dev/releases/tor
 exit
 
 # Install those template files that need prerequisites.
-install -d -o live -g users -m 555 $BASE/home_live_bin_mkbackup.tpl $LOCAL_ROOT/home/live/bin/mkbackup
-install -d -o live -g users -m 644 $BASE/home_live_.profile.tpl $LOCAL_ROOT/home/live/.profile
-install -d -o live -g users -m 644 $BASE/home_live_.kshrc.tpl $LOCAL_ROOT/home/live/.kshrc
-install -d -o live -g users -m 644 $BASE/home_live_.xinitrc.tpl $LOCAL_ROOT/home/live/.xinitrc
+install -d -o 1000 -g 10 -m 555 $BASE/home_live_bin_mkbackup.tpl $LOCAL_ROOT/home/live/bin/mkbackup
+install -d -o 1000 -g 10 -m 644 $BASE/home_live_.profile.tpl $LOCAL_ROOT/home/live/.profile
+install -d -o 1000 -g 10 -m 644 $BASE/home_live_.kshrc.tpl $LOCAL_ROOT/home/live/.kshrc
+install -d -o 1000 -g 10 -m 644 $BASE/home_live_.xinitrc.tpl $LOCAL_ROOT/home/live/.xinitrc
 install -d -o root -g wheel -m 644 $BASE/etc_privoxy_config $LOCAL_ROOT/etc/privoxy/config
 
 # E17 customization.
-install -d -o live -g users -m 644 $BASE/home_live_.e_e_applications_menu_favorite.menu.tpl $LOCAL_ROOT/home/live/.e/e/applications/menu/favorite.menu
-install -d -o live -g users -m 644 $BASE/home_live_.e_e_applications_bar_default_.order.tpl $LOCAL_ROOT/home/live/.e/e/applications/bar/default/.order
+install -d -o 1000 -g 10 -m 644 $BASE/home_live_.e_e_applications_menu_favorite.menu.tpl $LOCAL_ROOT/home/live/.e/e/applications/menu/favorite.menu
+install -d -o 1000 -g 10 -m 644 $BASE/home_live_.e_e_applications_bar_default_.order.tpl $LOCAL_ROOT/home/live/.e/e/applications/bar/default/.order
 install -d -o root -g wheel -m 644 $BASE/usr_local_share_applications_xterm.desktop.tpl $LOCAL_ROOT/usr/local/share/applications/xterm.desktop
 
 # Prepare to-be-mfs file systems by packaging their directories into
