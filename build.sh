@@ -187,6 +187,7 @@ install -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
 install -o root -g wheel -m 644 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
 install -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
 install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
+install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
 
 #
 # Enter change-root and customize system within.
@@ -196,7 +197,6 @@ ldconfig
 perl -p -i -e 's/noname.my.domain noname/livecd.BSDanywhere.org livecd/g' /etc/hosts
 echo "machdep.allowaperture=2" >> /etc/sysctl.conf
 echo "net.inet6.ip6.accept_rtadv=1" >> /etc/sysctl.conf
-touch /fastboot
 echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 
 # Create 'live' account with an empty password.
