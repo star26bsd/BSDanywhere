@@ -192,7 +192,7 @@ install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
 
 # Install BSDanywhere specific template files.
 install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
-install -o root -g wheel -m 644 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
+install -o root -g wheel -m 755 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
 install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
 
 #
