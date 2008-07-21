@@ -185,6 +185,7 @@ install -o root -g wheel -m 644 $CWD/etc_motd.tpl $IMAGE_ROOT/etc/motd
 install -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
 install -o root -g wheel -m 644 $CWD/etc_hosts.tpl $IMAGE_ROOT/etc/hosts
 install -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT/etc/sysctl.conf
+install -o root -g wheel -m 644 $CWD/etc_rc.tpl $IMAGE_ROOT/etc/rc
 install -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
 install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
 
@@ -208,17 +209,6 @@ pwd_mkdb /etc/master.passwd
 # Download and install packages.
 echo
 pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping clamav e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 sleuthkit smartmontools rsnapshot surfraw darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
-
-# To create /dev nodes and to untar all pre-packaged file systems
-# into memory, we need to hook into /etc/rc early enough.
-RC=/etc/rc
-perl -p -i -e 's@# XXX \(root now writeable\)@$&\necho -n "Creating device nodes ... "; cp /stand/MAKEDEV /dev; cd /dev && ./MAKEDEV all; echo done@' $RC
-perl -p -i -e 's@# XXX \(root now writeable\)@$&\n\necho -n "Populating file systems:"; for i in var etc root home; do echo -n " \$i"; tar -C / -zxphf /stand/\$i.tgz; done; echo .@' $RC
-perl -p -i -e 's#^rm -f /fastboot##' $RC
-perl -p -i -e 's#^(exit 0)$#cat /etc/welcome\n$&#g' $RC
-# time marker for backups (which file was modified)
-perl -p -i -e 's@^mount -uw /.*\n$@$&\ntouch /etc/timemark\n@' $RC
-perl -p -i -e 's@/MAKEDEV all; echo done$@$&\n\n# exec restore script early\n/etc/rc.restore\n@' $RC
 
 # Download torbutton extension and place it in live's home account for manual installation.
 # Users can drag this file into firefox to install it. Automatic install seems to be broken.
@@ -257,5 +247,5 @@ rm $IMAGE_ROOT/etc/fbtab
 
 # Finally, create the image.
 cd $IMAGE_ROOT/..
-echo 'Creating ISO image.'
+echo 'Creating ISO image:'
 mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog image
