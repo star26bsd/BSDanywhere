@@ -178,15 +178,16 @@ prepare_filesystem
 # Help chroot to find a name server.
 cp /etc/resolv.conf $IMAGE_ROOT/etc/
 
-# Install modified OpenBSD template files.
-install -o root -g wheel -m 644 $CWD/etc_fstab.tpl $IMAGE_ROOT/etc/fstab
-install -o root -g wheel -m 644 $CWD/etc_myname.tpl $IMAGE_ROOT/etc/myname
-install -o root -g wheel -m 644 $CWD/etc_motd.tpl $IMAGE_ROOT/etc/motd
-install -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
-install -o root -g wheel -m 644 $CWD/etc_hosts.tpl $IMAGE_ROOT/etc/hosts
-install -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT/etc/sysctl.conf
-install -o root -g wheel -m 644 $CWD/etc_rc.tpl $IMAGE_ROOT/etc/rc
-install -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
+# Install modified OpenBSD template files. Always make a backup copy so
+# people can understand what the BSDanywhere specific modifications are.
+install -b -B .orig -o root -g wheel -m 644 $CWD/etc_fstab.tpl $IMAGE_ROOT/etc/fstab
+install -b -B .orig -o root -g wheel -m 644 $CWD/etc_myname.tpl $IMAGE_ROOT/etc/myname
+install -b -B .orig -o root -g wheel -m 644 $CWD/etc_motd.tpl $IMAGE_ROOT/etc/motd
+install -b -B .orig -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
+install -b -B .orig -o root -g wheel -m 644 $CWD/etc_hosts.tpl $IMAGE_ROOT/etc/hosts
+install -b -B .orig -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT/etc/sysctl.conf
+install -b -B .orig -o root -g wheel -m 644 $CWD/etc_rc.tpl $IMAGE_ROOT/etc/rc
+install -b -B .orig -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
 install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
 
 # Install BSDanywhere specific template files.
@@ -219,13 +220,13 @@ exit
 
 # Install those template files that need prerequisites.
 install -d -o 1000 -g 10 -m 555 $CWD/home_live_bin_mkbackup.tpl $IMAGE_ROOT/home/live/bin/mkbackup
-install -d -o 1000 -g 10 -m 644 $CWD/home_live_.profile.tpl $IMAGE_ROOT/home/live/.profile
-install -d -o 1000 -g 10 -m 644 $CWD/home_live_.kshrc.tpl $IMAGE_ROOT/home/live/.kshrc
-install -d -o 1000 -g 10 -m 644 $CWD/home_live_.xinitrc.tpl $IMAGE_ROOT/home/live/.xinitrc
+install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.profile.tpl $IMAGE_ROOT/home/live/.profile
+install -o 1000 -g 10 -m 644 $CWD/home_live_.kshrc.tpl $IMAGE_ROOT/home/live/.kshrc
+install -o 1000 -g 10 -m 644 $CWD/home_live_.xinitrc.tpl $IMAGE_ROOT/home/live/.xinitrc
 install -d -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_menu_favorite.menu.tpl $IMAGE_ROOT/home/live/.e/e/applications/menu/favorite.menu
 install -d -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_bar_default_.order.tpl $IMAGE_ROOT/home/live/.e/e/applications/bar/default/.order
-install -d -o root -g wheel -m 644 $CWD/usr_local_share_applications_xterm.desktop.tpl $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
-install -d -o root -g wheel -m 644 $CWD/etc_privoxy_config $IMAGE_ROOT/etc/privoxy/config
+install -o root -g wheel -m 644 $CWD/usr_local_share_applications_xterm.desktop.tpl $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
+install -b -B .orig -o root -g wheel -m 644 $CWD/etc_privoxy_config.tpl $IMAGE_ROOT/etc/privoxy/config
 
 # Prepare to-be-mfs file systems by packaging their directories into
 # individual tgz's. They will be untar'ed on each boot by /etc/rc.
