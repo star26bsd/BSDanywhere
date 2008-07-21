@@ -56,6 +56,14 @@ export THIS_RELEASE=$(uname -r)
 #
 examine_environment() {
 
+        echo -n 'Invocation: '
+        if [ "$0" = 'ksh' ]; then
+            echo 'via ksh (ok)'
+        else
+            echo "$0 directly (NOT ok)"
+            return 1
+        fi
+
         echo -n 'This user: '
         if [ "$USER" = 'root' ]; then
             echo 'root (ok)'
@@ -158,6 +166,8 @@ prepare_filesystem() {
 }
 
 examine_environment
+[ $? = 0 ] || exit 1
+
 prepare_build
 install_custom_kernels
 install_boot_files
