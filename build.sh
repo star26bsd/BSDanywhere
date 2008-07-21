@@ -41,7 +41,7 @@ export RELEASE=4.3
 export ARCH=i386
 export R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 
-export IMAGE_ROOT=$BASE/livecd
+export IMAGE_ROOT=$BASE/image
 export CACHE_ROOT=$BASE/cache
 
 export MASTER_SITES=http://mirror.startek.ch
@@ -239,6 +239,7 @@ install -d -o root -g wheel -m 644 $CWD/etc_privoxy_config $IMAGE_ROOT/etc/privo
 
 # Prepare to-be-mfs file systems by packaging their directories into
 # individual tgz's. They will be untar'ed on each boot by /etc/rc.
+# This will greatly reduce boot time compared to using -P in newfs.
 for fs in var etc root home
 do
     echo -n "Packaging $fs ... "
@@ -249,11 +250,12 @@ done
 # Cleanup build environment.
 rm $IMAGE_ROOT/etc/resolv.conf
 
-# To save space on CD, we clean out what is not needed to boot.
+# To save space on the image, we clean out what is not needed to boot.
 rm -r $IMAGE_ROOT/var/* && ln -s /var/tmp $IMAGE_ROOT/tmp
 rm -r $IMAGE_ROOT/home/*
 rm $IMAGE_ROOT/etc/fbtab
 
-# Finally, create the CD image.
+# Finally, create the image.
 cd $IMAGE_ROOT/..
-mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog livecd
+echo 'Creating ISO image.'
+mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog image
