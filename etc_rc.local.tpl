@@ -82,10 +82,10 @@ sub_timezone() {
 # Ask for setting the keyboard layout and pre-set the X11 layout, too.
 sub_kblayout() {
     echo "Select keyboard layout *by number*:"
-    select kbd in $(kbd -l | egrep '^[a-z].$')
+    select kbd in $(kbd -l | grep -v encoding | egrep '^[a-z]{2,2}.?[swapctrlcaps|declk|dvorak|iopener|nodead]*.?[dvorak|iopener]*$')
     do
        # validate input
-       echo $kbd | egrep -q '^[a-z].$'
+       echo $kbd | egrep -q '^[a-z]{2,2}.?[swapctrlcaps|declk|dvorak|iopener|nodead]*.?[dvorak|iopener]*$'
        if [ "$?" = '0' ]; then
 
           # set console mapping
@@ -97,7 +97,7 @@ sub_kblayout() {
           elif [ "$kbd" = 'sv' ]; then
              xkbd=se
           else
-             xkbd="$kbd"
+             xkbd=$(echo "$kbd" | awk -F. {'print $1}') 
           fi
 
           echo "/usr/X11R6/bin/setxkbmap $xkbd &" > /etc/X11/.xinitrc
