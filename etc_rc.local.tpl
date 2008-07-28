@@ -21,7 +21,11 @@ echo '.'
 # BSDanywhere should always run on low memory systems. However, if
 # we find enough memory, we can offer some performance improvements.
 sub_mfsmount() {
-    if [ $(sysctl -n hw.physmem) -gt 530000000 ]
+
+    # convert into mb due to ksh's 32 bit limit
+    physmem=$(echo $(sysctl -n hw.physmem) / 1048576 | bc )
+
+    if [ $physmem -gt 510 ]
     then
         echo -n "Do you want to preload free memory to speed up BSDanywhere? (N/y) "
         read doit
@@ -82,10 +86,10 @@ sub_timezone() {
 # Ask for setting the keyboard layout and pre-set the X11 layout, too.
 sub_kblayout() {
     echo "Select keyboard layout *by number*:"
-    select kbd in $(kbd -l | grep -v encoding | egrep '^[a-z]{2,2}.?[swapctrlcaps|declk|dvorak|iopener|nodead]*.?[dvorak|iopener]*$')
+    select kbd in $(kbd -l | egrep '^[a-z].$')
     do
        # validate input
-       echo $kbd | egrep -q '^[a-z]{2,2}.?[swapctrlcaps|declk|dvorak|iopener|nodead]*.?[dvorak|iopener]*$'
+       echo $kbd | egrep -q '^[a-z].$'
        if [ "$?" = '0' ]; then
 
           # set console mapping
@@ -97,7 +101,7 @@ sub_kblayout() {
           elif [ "$kbd" = 'sv' ]; then
              xkbd=se
           else
-             xkbd=$(echo "$kbd" | awk -F. {'print $1}') 
+             xkbd="$kbd"
           fi
 
           echo "/usr/X11R6/bin/setxkbmap $xkbd &" > /etc/X11/.xinitrc
