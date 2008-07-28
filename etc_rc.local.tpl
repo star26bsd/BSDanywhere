@@ -25,7 +25,7 @@ sub_mfsmount() {
     # convert into mb due to ksh's 32 bit limit
     physmem=$(echo $(sysctl -n hw.physmem) / 1048576 | bc )
 
-    if [ $physmem -gt 510 ]
+    if [ $physmem -gt 512 ]
     then
         echo -n "Do you want to preload free memory to speed up BSDanywhere? (N/y) "
         read doit
