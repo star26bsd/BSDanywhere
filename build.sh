@@ -240,6 +240,27 @@ install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_menu_f
 install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_bar_default_.order.tpl $IMAGE_ROOT/home/live/.e/e/applications/bar/default/.order
 install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.config_menus_applications.menu.tpl $IMAGE_ROOT/home/live/.config/menus/applications.menu
 
+# Using gzexe we can compress binaries to speed up
+# cdrom reads by saving space at the same time!
+echo 'Compressing binary executables ... '
+find $IMAGE_ROOT/bin \
+     $IMAGE_ROOT/sbin \
+     $IMAGE_ROOT/usr/bin \
+     $IMAGE_ROOT/usr/sbin \
+     $IMAGE_ROOT/usr/local/bin \
+     $IMAGE_ROOT/usr/local/sbin \
+     $IMAGE_ROOT/usr/X11R6/bin ! -name sh -type f -size +500 -exec gzexe {} \;
+
+echo -n 'Removing gzexe ~ copies ... '
+find $IMAGE_ROOT/bin \
+     $IMAGE_ROOT/sbin \
+     $IMAGE_ROOT/usr/bin \
+     $IMAGE_ROOT/usr/sbin \
+     $IMAGE_ROOT/usr/local/bin \
+     $IMAGE_ROOT/usr/local/sbin \
+     $IMAGE_ROOT/usr/X11R6/bin -type f -name "*~" -exec rm {} \;
+echo 'done'
+
 # Prepare to-be-mfs file systems by packaging their directories into
 # individual tgz's. They will be untar'ed on each boot by /etc/rc.
 # This will greatly reduce boot time compared to using -P in newfs.
