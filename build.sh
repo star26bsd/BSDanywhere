@@ -249,7 +249,8 @@ find $IMAGE_ROOT/bin \
      $IMAGE_ROOT/usr/sbin \
      $IMAGE_ROOT/usr/local/bin \
      $IMAGE_ROOT/usr/local/sbin \
-     $IMAGE_ROOT/usr/X11R6/bin ! -name sh -type f -size +500 -exec gzexe {} \;
+     $IMAGE_ROOT/usr/X11R6/bin \
+     ! -name sh ! -name ksh ! -name rksh ! -name init -type f -size +200 -exec gzexe {} \;
 
 echo -n 'Removing gzexe ~ copies ... '
 find $IMAGE_ROOT/bin \
@@ -273,6 +274,7 @@ done
 
 # Cleanup build environment.
 rm $IMAGE_ROOT/etc/resolv.conf
+rm /tmp/gzexe*
 
 # To save space on the image, we clean out what is not needed to boot.
 rm -r $IMAGE_ROOT/var/* && ln -s /var/tmp $IMAGE_ROOT/tmp
