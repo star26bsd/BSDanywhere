@@ -17,7 +17,6 @@
 # This script creates a backup of modified files in /etc, /var and /root.
 
 sub_backup() {
-   tmpf=`mktemp`
    find /etc /var /root -newer /etc/timemark ! -type s ! -type p | cpio -o > /mnt/sys.cio
 }
 
