@@ -18,11 +18,7 @@
 
 sub_backup() {
    tmpf=`mktemp`
-   find /etc /var /root -newer /etc/timemark -type d > $tmpf
-   find /etc /var /root -newer /etc/timemark -type f >> $tmpf
-   find /etc /var /root -newer /etc/timemark -type l >> $tmpf
-   cat $tmpf | cpio -o > /mnt/sys.cio
-   rm $tmpf
+   find /etc /var /root -newer /etc/timemark ! -type s ! -type p | cpio -o > /mnt/sys.cio
 }
 
 mount | grep mnt
