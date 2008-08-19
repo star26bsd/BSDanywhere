@@ -227,7 +227,8 @@ echo .
 
 # BSDanywhere specific device node creation.
 echo -n 'Creating device nodes ... '
-cp /stand/MAKEDEV /dev; cd /dev && ./MAKEDEV all
+    cp /stand/MAKEDEV /dev/
+    cd /dev && ./MAKEDEV all
 echo done
 
 # BSDanywhere specific restore script
