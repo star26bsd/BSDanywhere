@@ -59,5 +59,5 @@ liverestore() {
 liverestore
 
 # startx only for local logins
-[ "$SSH_CLIENT" ] || [ "$DISPLAY" ] || startx
+[ "$SSH_CLIENT" ] || startx
 
