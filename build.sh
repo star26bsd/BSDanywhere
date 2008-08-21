@@ -137,6 +137,7 @@ examine_environment() {
 
         echo -n "Free space in $BASE: "
         test -d $IMAGE_ROOT && rm -rf $IMAGE_ROOT
+        test -f $BASE/bsdanywhere$R-$ARCH.iso && rm -f $BASE/bsdanywhere$R-$ARCH.iso
         AVAIL=$(df -k | grep $BASE_FS | awk '{print $4}')
         if [ "$AVAIL" -ge "$MIN_SPACE_REQ" ]
         then
