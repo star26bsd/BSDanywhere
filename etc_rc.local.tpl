@@ -138,6 +138,7 @@ sub_networks() {
       if [ -z "$ntp" ] || [ "$ntp" = "y" ] || [ "$ntp" = "Y" ] || [ "$ntp" = "yes" ] || [ "$ntp" = "Yes" ]
       then
           sudo ntpd -s &
+          echo "ntpd_flags=" >> /etc/rc.conf.local
       fi
    fi
 }
