@@ -58,7 +58,7 @@ sub_msdosmount() {
 #
 
 usbdevs -d | grep umass >/dev/null
-if [ $? -eq 1 ]
+if [ $? -eq 0 ]
 then
    echo "A USB device has been found. To restore previously saved system data"
    echo -n "specify a drive without /dev and partition (e.g. 'sd1') or 'no': "
