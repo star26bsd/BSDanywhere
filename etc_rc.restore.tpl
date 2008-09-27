@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2008 Rene Maroufi
+# Copyright (c) 2008 Rene Maroufi, Stephan A. Rickauer
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -52,38 +52,38 @@ sub_msdosmount() {
        && echo done || echo failed
 }
 
+sub_find_umass() {
+    $(usbdevs -d | grep umass) || exit 1
+}
 
 #
 ### Main
 #
 
-usbdevs -d | grep umass >/dev/null
-if [ $? -eq 0 ]
+sub_find_umass
+
+echo "A USB device has been found. To restore previously saved system data"
+echo -n "specify a drive without /dev and partition (e.g. 'sd1') or 'no': "
+
+read device
+device=$(echo $device | tr '[:upper:]' '[:lower:]')
+
+if [ "$device" = "n" ] || [ "$device" = "no" ] || [ -z "$device" ]
 then
-   echo "A USB device has been found. To restore previously saved system data"
-   echo -n "specify a drive without /dev and partition (e.g. 'sd1') or 'no': "
+   exit 0
+fi
 
-   read device
+disklabel "${device}" 2>/dev/null | grep MSDOS | grep i: >/dev/null \
+    && fs=msdos
 
-   if [ "$device" = "n" ] || [ "$device" = "no" ] || [ "$device" = "No" ] || [ "$device" = "NO" ] || [ "$device" = "N" ] || [ -z "$device" ]
-   then
-      exit 0
-   fi
+disklabel "${device}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null \
+    && fs=bsd
 
-   disklabel "${device}" 2>/dev/null | grep MSDOS | grep i: >/dev/null \
-       && fs=msdos
-
-   disklabel "${device}" 2>/dev/null | grep 4.2BSD | grep a: >/dev/null \
-       && fs=bsd
-
-    if [ "$fs" ]; then
-        sub_$fs\mount
-    else
-        echo "Can't find usable partition on device!" >&2
-        exit 3
-    fi
+if [ "$fs" ]; then
+    sub_$fs\mount
 else
-    exit 1
+    echo "Can't find usable partition on device!" >&2
+    exit 3
 fi
 
 sub_restore
