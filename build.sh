@@ -45,7 +45,7 @@ export IMAGE_ROOT=$BASE/image
 export CACHE_ROOT=$BASE/cache
 
 export MASTER_SITES=http://mirror.startek.ch
-export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/pkg/$ARCH/
+export PKG_PATH=http://mirror.switch.ch/ftp/pub/OpenBSD/$RELEASE/packages/$ARCH/:$MASTER_SITES/OpenBSD/packages/$RELEASE/$ARCH/
 
 export CWD=$(pwd)
 export THIS_OS=$(uname)
@@ -125,29 +125,31 @@ examine_environment() {
         done
         echo "$OPTIONS (ok)"
 
-        echo -n "Free space in $BASE: "
-        AVAIL=$(df -k | grep $BASE_FS | awk '{print $4}')
-        if [ "$AVAIL" -ge "$MIN_SPACE_REQ" ]
-        then
-             echo "$AVAIL kb (ok)"
-        else
-             echo "$AVAIL kb (NOT ok)"
-        fi
-
         echo -n "$BASE "
-        touch "$BASE/test" 
-        if [ $? = '0'  ]; then 
+        touch "$BASE/test"
+        if [ $? = '0'  ]; then
             echo 'is writeable (ok)'
             rm $BASE/test
         else
             echo "isn't writable (NOT ok)"
             return 1
         fi
+
+        echo -n "Free space in $BASE: "
+        test -d $IMAGE_ROOT && rm -rf $IMAGE_ROOT
+        test -f $BASE/bsdanywhere$R-$ARCH.iso && rm -f $BASE/bsdanywhere$R-$ARCH.iso
+        AVAIL=$(df -k | grep $BASE_FS | awk '{print $4}')
+        if [ "$AVAIL" -ge "$MIN_SPACE_REQ" ]
+        then
+            echo "$AVAIL kb (ok)"
+        else
+            echo "$AVAIL kb (NOT ok)"
+            return 1
+        fi
 }
 
 prepare_build() {
     echo -n 'Preparing build environment ... '
-    test -d $IMAGE_ROOT && rm -rf $IMAGE_ROOT
     mkdir -p $IMAGE_ROOT
     mkdir -p $CACHE_ROOT
     echo done
@@ -163,9 +165,9 @@ install_custom_kernels() {
     done
 }
 
-# Get generic boot loaders and ram disk kernel.
+# Get generic boot loaders.
 install_boot_files() {
-    for i in cdbr cdboot bsd.rd
+    for i in cdbr cdboot
     do
         test -r $CACHE_ROOT/$i || \
              ftp -o $CACHE_ROOT/$i $MASTER_SITES/OpenBSD/stable/$RELEASE-stable/$ARCH/$i
@@ -238,7 +240,7 @@ install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/
 
     # Download and install packages.
     echo
-    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox-2.0.0.14 mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 smartmontools rsnapshot darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep
+    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox-2.0.0.14 mozilla-thunderbird gqview bzip2 epdfview ipcalc isearch BitchX imapfilter gimp abiword privoxy tor arping e-20071211p3 audacious mutt-1.5.17p0-sasl-sidebar-compressed screen-4.0.3p1 smartmontools rsnapshot darkstat aescrypt aiccu amap angst httptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep galculator mboxgrep nemesis newsfetch queso radiusniff scanssh smtpscan ssldump stress stunnel
     
     # Leave the chroot environment.
     exit

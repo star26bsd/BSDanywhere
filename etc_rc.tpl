@@ -209,8 +209,8 @@ fi
 trap "echo 'Boot interrupted.'; exit 1" 3
 
 umount -a >/dev/null 2>&1
-mount -a -t nonfs,vnd
-mount -uw /		# root on nfs requires this, others aren't hurt
+mount -a -t nonfs,vnd >/dev/null 2>&1
+mount -uw / >/dev/null 2>&1	# root on nfs requires this, others aren't hurt
 # XXX (root now writeable)
 
 # BSDanywhere specific: Set timemark for syncsys.
@@ -451,9 +451,9 @@ swapctl -A -t noblk
 
 # /var/crash should be a directory or a symbolic link
 # to the crash directory if core dumps are to be saved.
-if [ -d /var/crash ]; then
-	savecore ${savecore_flags} /var/crash
-fi
+#if [ -d /var/crash ]; then
+#	savecore ${savecore_flags} /var/crash
+#fi
 
 if [ X"${afs}" = X"YES" -a -c /dev/xfs0 ]; then
 	echo -n 'mounting afs:'
@@ -487,13 +487,13 @@ if [ -f /etc/ptmp ]; then
 	'password file may be incorrect -- /etc/ptmp exists'
 fi
 
-echo clearing /tmp
+#echo clearing /tmp
 
 # prune quickly with one rm, then use find to clean up /tmp/[lq]*
 # (not needed with mfs /tmp, but doesn't hurt there...)
-(cd /tmp && rm -rf [a-km-pr-zA-Z]* &&
-    find . ! -name . ! -name lost+found ! -name quota.user \
-	! -name quota.group -execdir rm -rf -- {} \; -type d -prune)
+#(cd /tmp && rm -rf [a-km-pr-zA-Z]* &&
+#    find . ! -name . ! -name lost+found ! -name quota.user \
+#	! -name quota.group -execdir rm -rf -- {} \; -type d -prune)
 
 # create Unix sockets directories for X if needed and make sure they have
 # correct permissions

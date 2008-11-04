@@ -27,7 +27,7 @@ sub_mfsmount() {
 
     if [ $physmem -gt 512 ]
     then
-        echo -n "Do you want to preload free memory to speed up BSDanywhere? (N/y) "
+        echo -n "Preload free memory to speed up BSDanywhere? (N/y) "
         read doit
         if [ "$doit" == "y" ] || [ "$doit" == "Y" ] || [ "$doit" == "yes" ] || [ "$doit" == "Yes" ]
         then
@@ -83,65 +83,65 @@ sub_timezone() {
    done
 }
 
-# Ask for setting the keyboard layout and pre-set the X11 layout, too.
+# Ask for setting the keyboard layout.
 sub_kblayout() {
-    echo "Select keyboard layout *by number*:"
-    select kbd in $(kbd -l | grep -v encoding | egrep '^[a-z]{2,2}.?[swapctrlcaps|declk|dvorak|iopener|nodead]*.?[dvorak|iopener]*$')
+    echo -n "keyboard mapping? ('L' for list) "
+    read kbd
+    while [ $kb = "L" ]
     do
-       # validate input
-       echo $kbd | egrep -q '^[a-z]{2,2}.?[swapctrlcaps|declk|dvorak|iopener|nodead]*.?[dvorak|iopener]*$'
-       if [ "$?" = '0' ]; then
-
-          # set console mapping
-          /sbin/kbd "$kbd"
-
-          # write X11 mapping into site wide config
-          if [ "$kbd" = 'sg' ]; then
-             xkbd=ch
-          elif [ "$kbd" = 'sv' ]; then
-             xkbd=se
-          else
-             xkbd=$(echo "$kbd" | awk -F. {'print $1}') 
-          fi
-
-          echo "/usr/X11R6/bin/setxkbmap $xkbd &" > /etc/X11/.xinitrc
-          break
-
-       fi
+       echo "Major tables: be br cf de dk es fr hu it jp la lt lv nl no pl pt ru sf sg si sv tr ua uk us"
+       echo -n "keyboard mapping? ('L' for list) "
+       read kbd
     done
+
+    # validate input
+    echo $kbd | egrep -q '^[a-z]{2,2}.?[swapctrlcaps|declk|dvorak|iopener|nodead]*.?[dvorak|iopener]*$'
+    if [ "$?" = '0' ]; then
+
+       # set console mapping
+       /sbin/kbd "$kbd"
+    else
+       echo "Unknown keyboard mapping. Keyboard mapping untouched!"
+    fi
 }
 
 # Find all real network interfaces and offer to run dhclient/rtsol on
 # each. Also offer to synchronize the time using a default ntpd.conf.
 sub_networks() {
-   echo -n "Do you want to auto configure the network? (Y/n) "
+   echo -n "Auto configure the network? (Y/n) "
    read net
    if [ -z "$net" ] || [ "$net" = "y" ] || [ "$net" = "Y" ] || [ "$net" = "yes" ] || [ "$net" = "Yes" ]
    then
       for nic in $(ifconfig | awk -F: '/^[a-z]+[0-9]: flags=/ { print $1 }' | egrep -v "lo|enc|pflog")
       do
-          echo -n "Do you want to configure $nic for dhcp? (Y/n) "
+          echo -n "Configure $nic for dhcp? (Y/n) "
           read if
           if [ -z "$if" ] || [ "$if" = "y" ] || [ "$if" = "Y" ] || [ "$if" = "yes" ] || [ "$if" = "Yes" ]
           then
-              sudo ifconfig "$nic" up
-              sudo dhclient "$nic"
-              sudo rtsol "$nic"
+              ifconfig "$nic" up
+              dhclient "$nic"
+              rtsol "$nic"
+              echo "dhcp NONE NONE NONE" > /etc/hostname.$nic
+              echo "rtsol" >> /etc/hostname.$nic
           fi
       done
 
-      echo -n "Do you want to synchronize the time using ntpd? (Y/n) "
+      echo -n "Synchronize the time using ntpd? (Y/n) "
       read ntp
       if [ -z "$ntp" ] || [ "$ntp" = "y" ] || [ "$ntp" = "Y" ] || [ "$ntp" = "yes" ] || [ "$ntp" = "Yes" ]
       then
-          sudo ntpd -s &
+          ntpd -s &
+          echo "ntpd_flags=" >> /etc/rc.conf.local
       fi
    fi
 }
 
 # Always ask for the keyboard layout first, otherwise subsequent
 # questions may have to be answered on an unset (=us) layout.
-sub_kblayout
-sub_timezone
-sub_networks
+if [ ! -f /tmp/restore ]
+then
+    sub_kblayout
+    sub_timezone
+    sub_networks
+fi
 sub_mfsmount
