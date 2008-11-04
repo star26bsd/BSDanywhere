@@ -37,7 +37,7 @@
 #
 export BASE=/specify/base/path
 
-export RELEASE=4.3
+export RELEASE=4.4
 export ARCH=i386
 export R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 
