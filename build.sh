@@ -37,21 +37,18 @@
 #
 export BASE=/specify/base/path
 
-export RELEASE=4.4
-export ARCH=i386
+export ARCH=$(uname -m)
+export RELEASE=$(uname -r)
 export R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 
 export IMAGE_ROOT=$BASE/image
 export CACHE_ROOT=$BASE/cache
 
-export MIRROR1=http://mirror.switch.ch/ftp/pub/OpenBSD
-export MIRROR2=http://mirror.startek.ch
-export PKG_PATH=$MIRROR1/$RELEASE/packages/$ARCH/:$MIRROR2/OpenBSD/packages/$RELEASE/$ARCH/
+export MIRROR=http://mirror.switch.ch/ftp/pub/OpenBSD
+export PKG_PATH=$MIRROR/$RELEASE/packages/$ARCH/:http://mirror.startek.ch/OpenBSD/packages/$RELEASE/$ARCH/
 
 export CWD=$(pwd)
 export THIS_OS=$(uname)
-export THIS_ARCH=$(uname -m)
-export THIS_RELEASE=$(uname -r)
 export MIN_SPACE_REQ='1600000'
 
 #
@@ -80,22 +77,6 @@ examine_environment() {
             echo 'OpenBSD (ok)'
         else
             echo "$THIS_OS (NOT ok)"
-            return 1
-        fi
-
-        echo -n 'This arch: '
-        if [ "$THIS_ARCH" = "$ARCH" ]; then
-            echo "$ARCH (ok)"
-        else
-            echo "$THIS_ARCH (NOT ok)"
-            return 1
-        fi
-
-        echo -n 'This release: '
-        if [ "$THIS_RELEASE" = "$RELEASE" ]; then
-            echo "$RELEASE (ok)"
-        else 
-            echo "$THIS_RELEASE (NOT ok)"
             return 1
         fi
 
@@ -156,22 +137,12 @@ prepare_build() {
     echo done
 }
 
-# Get custom kernels.
-install_custom_kernels() {
-    for i in bsd bsd.mp
-    do
-        test -r $CACHE_ROOT/$i || \
-             ftp -o $CACHE_ROOT/$i $MIRROR2/BSDanywhere/$RELEASE/$ARCH/$i
-        cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
-    done
-}
-
-# Get generic boot loaders.
+# Get generic kernels and boot loaders.
 install_boot_files() {
-    for i in cdbr cdboot
+    for i in bsd bsd.mp cdbr cdboot
     do
         test -r $CACHE_ROOT/$i || \
-             ftp -o $CACHE_ROOT/$i $MIRROR1/$RELEASE/$ARCH/$i
+             ftp -o $CACHE_ROOT/$i $MIRROR/$RELEASE/$ARCH/$i
         cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
     done
 }
@@ -181,7 +152,7 @@ install_filesets() {
     for i in base game man misc etc xbase xetc xfont xserv xshare
     do
         test -r $CACHE_ROOT/$i$R.tgz || \
-             ftp -o $CACHE_ROOT/$i$R.tgz $MIRROR1/$RELEASE/$ARCH/$i$R.tgz
+             ftp -o $CACHE_ROOT/$i$R.tgz $MIRROR/$RELEASE/$ARCH/$i$R.tgz
         echo -n "Installing $i ... "
         tar -C $IMAGE_ROOT -xzphf $CACHE_ROOT/$i$R.tgz
         echo done
@@ -202,7 +173,6 @@ examine_environment
 [ $? = 0 ] || exit 1
 
 prepare_build
-install_custom_kernels
 install_boot_files
 install_filesets
 prepare_filesystem
