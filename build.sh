@@ -44,8 +44,9 @@ export R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 export IMAGE_ROOT=$BASE/image
 export CACHE_ROOT=$BASE/cache
 
-export MIRROR=http://mirror.switch.ch/ftp/pub/OpenBSD
-export PKG_PATH=$MIRROR/$RELEASE/packages/$ARCH/:http://mirror.startek.ch/OpenBSD/packages/$RELEASE/$ARCH/
+export MIRROR1=http://mirror.switch.ch/ftp/pub/OpenBSD
+export MIRROR2=http://mirror.startek.ch
+export PKG_PATH=$MIRROR1/$RELEASE/packages/$ARCH/:$MIRROR2/OpenBSD/packages/$RELEASE/$ARCH/
 
 export CWD=$(pwd)
 export THIS_OS=$(uname)
@@ -137,12 +138,22 @@ prepare_build() {
     echo done
 }
 
-# Get generic kernels and boot loaders.
-install_boot_files() {
-    for i in bsd bsd.mp cdbr cdboot
+# Get custom kernels.
+install_custom_kernels() {
+    for i in bsd bsd.mp
     do
         test -r $CACHE_ROOT/$i || \
-             ftp -o $CACHE_ROOT/$i $MIRROR/$RELEASE/$ARCH/$i
+             ftp -o $CACHE_ROOT/$i $MIRROR2/BSDanywhere/$RELEASE/$ARCH/$i
+        cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
+    done
+}
+
+# Get generic boot loaders.
+install_boot_files() {
+    for i in cdbr cdboot
+    do
+        test -r $CACHE_ROOT/$i || \
+             ftp -o $CACHE_ROOT/$i $MIRROR1/$RELEASE/$ARCH/$i
         cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
     done
 }
@@ -152,7 +163,7 @@ install_filesets() {
     for i in base game man misc etc xbase xetc xfont xserv xshare
     do
         test -r $CACHE_ROOT/$i$R.tgz || \
-             ftp -o $CACHE_ROOT/$i$R.tgz $MIRROR/$RELEASE/$ARCH/$i$R.tgz
+             ftp -o $CACHE_ROOT/$i$R.tgz $MIRROR1/$RELEASE/$ARCH/$i$R.tgz
         echo -n "Installing $i ... "
         tar -C $IMAGE_ROOT -xzphf $CACHE_ROOT/$i$R.tgz
         echo done
@@ -173,6 +184,7 @@ examine_environment
 [ $? = 0 ] || exit 1
 
 prepare_build
+install_custom_kernels
 install_boot_files
 install_filesets
 prepare_filesystem
