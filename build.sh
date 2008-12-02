@@ -144,7 +144,9 @@ install_custom_kernels() {
     do
         test -r $CACHE_ROOT/$i || \
              ftp -o $CACHE_ROOT/$i $MIRROR2/BSDanywhere/$RELEASE/$ARCH/$i
+        echo -n "Installing $i ... "
         cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
+        echo done
     done
 }
 
