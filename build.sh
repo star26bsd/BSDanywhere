@@ -2,7 +2,7 @@
 #
 # Build script for creating the BSDanywhere OpenBSD Live CD image.
 #
-# Copyright (c) 2008  Rene Maroufi, Stephan A. Rickauer
+# Copyright (c) 2008-2009  Rene Maroufi, Stephan A. Rickauer
 #
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without modification,
@@ -141,22 +141,29 @@ prepare_build() {
 install_boot_files() {
     for i in bsd bsd.mp cdbr cdboot
     do
-        test -r $CACHE_ROOT/$i || \
-             ftp -o $CACHE_ROOT/$i $MIRROR/$RELEASE/$ARCH/$i
-        echo -n "Installing $i ... "
-        cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
-        echo done
+	if [ ! -r "$CACHE_ROOT/$i" ]
+	then
+	     echo "$i not cached, fetching:"
+	     ftp -Vo $CACHE_ROOT/$i $MIRROR/$RELEASE/$ARCH/$i
+	fi
+	echo -n "Installing $i ... "
+	cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
+	echo done
     done
 }
 
 # Get all OpenBSD file sets except compXX.tgz.
 install_filesets() {
-    for i in base game man misc etc xbase xetc xfont xserv xshare
+    for fs in base game man misc etc xbase xetc xfont xserv xshare
     do
-        test -r $CACHE_ROOT/$i$R.tgz || \
-             ftp -o $CACHE_ROOT/$i$R.tgz $MIRROR/$RELEASE/$ARCH/$i$R.tgz
-        echo -n "Installing $i ... "
-        tar -C $IMAGE_ROOT -xzphf $CACHE_ROOT/$i$R.tgz
+        fs=$fs$R.tgz
+        if [ ! -r "$CACHE_ROOT/$fs" ]
+        then
+             echo "$fs not cached, fetching:"
+             ftp -Vo $CACHE_ROOT/$fs $MIRROR/$RELEASE/$ARCH/$fs
+        fi
+        echo -n "Installing $fs ... "
+        tar -C $IMAGE_ROOT -xzphf $CACHE_ROOT/$fs
         echo done
     done
 }
