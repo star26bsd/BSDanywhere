@@ -201,6 +201,8 @@ install -b -B .orig -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT
 install -b -B .orig -o root -g wheel -m 644 $CWD/etc_rc.tpl $IMAGE_ROOT/etc/rc
 install -b -B .orig -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
 install -b -B .orig -o root -g wheel -m 440 $CWD/etc_sudoers.tpl $IMAGE_ROOT/etc/sudoers
+install -b -B .orig -o root -g wheel -m 600 $CWD/etc_master.passwd.tpl $IMAGE_ROOT/etc/master.passwd
+install -b -B .orig -o root -g wheel -m 644 $CWD/etc_group.tpl $IMAGE_ROOT/etc/group
 install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
 
 # Install BSDanywhere specific template files.
@@ -214,11 +216,6 @@ install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/
     chroot $IMAGE_ROOT
     ldconfig
 
-    # Create 'live' account with an empty password.
-    useradd -G wheel,operator,dialer -c "BSDanywhere Live CD Account" -d /home/live -k /etc/skel -s /bin/ksh -m live
-    perl -p -i -e 's/\Qlive:*************:1000\E/live::1000/g' /etc/master.passwd
-    pwd_mkdb /etc/master.passwd
-
     # Download and install packages.
     echo
     pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview-0.1.6p5 ipcalc BitchX imapfilter privoxy tor arping e-20071211p3 screen-4.0.3p1 smartmontools aescrypt aiccu amap angst httptunnel udptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep galculator mboxgrep nemesis newsfetch queso radiusniff scanssh smtpscan ssldump stress stunnel dnstop-20080502 dnstracer
@@ -226,7 +223,11 @@ install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/
     # Leave the chroot environment.
     exit
 
+# (Re-)Generate password databases.
+pwd_mkdb -d $IMAGE_ROOT/etc/ $IMAGE_ROOT/etc/master.passwd
+
 # Install those template files that need prerequisites.
+install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/
 install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/bin/
 install -o 1000 -g 10 -m 555 $CWD/home_live_bin_mkbackup.tpl $IMAGE_ROOT/home/live/bin/mkbackup
 install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.profile.tpl $IMAGE_ROOT/home/live/.profile
