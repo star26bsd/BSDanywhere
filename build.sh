@@ -137,7 +137,6 @@ prepare_build() {
     echo done
 }
 
-
 # Get generic kernels and boot loaders.
 install_boot_files() {
     for i in bsd bsd.mp cdbr cdboot
@@ -214,7 +213,7 @@ install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/
 
     # Download and install packages.
     echo
-    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping firefox mozilla-thunderbird gqview bzip2 epdfview-0.1.6p5 ipcalc BitchX imapfilter privoxy tor arping e-20071211p3 screen-4.0.3p1 smartmontools aescrypt aiccu amap angst httptunnel udptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep galculator mboxgrep nemesis newsfetch queso radiusniff scanssh smtpscan ssldump stress stunnel dnstop-20080502 dnstracer
+    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview-0.1.6p5 ipcalc BitchX imapfilter privoxy tor arping e-20071211p3 screen-4.0.3p1 smartmontools aescrypt aiccu amap angst httptunnel udptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep galculator mboxgrep nemesis newsfetch queso radiusniff scanssh smtpscan ssldump stress stunnel dnstop-20080502 dnstracer
     
     # Leave the chroot environment.
     exit
