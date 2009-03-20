@@ -52,6 +52,8 @@ export CWD=$(pwd)
 export THIS_OS=$(uname)
 export MIN_SPACE_REQ='1600000'
 
+export PKG_DBDIR=$IMAGE_ROOT/var/db/pkg
+
 #
 # Functions go first.
 #
@@ -210,19 +212,9 @@ install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
 install -o root -g wheel -m 755 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
 install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
 
-    #
-    # Enter change-root and customize system within.
-    #
-    chroot $IMAGE_ROOT
-    ldconfig
-
-    # Download and install packages.
-    echo
-    pkg_add -x iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview-0.1.6p5 ipcalc BitchX imapfilter privoxy tor arping e-20071211p3 screen-4.0.3p1 smartmontools aescrypt aiccu amap angst httptunnel udptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep galculator mboxgrep nemesis newsfetch queso radiusniff scanssh smtpscan ssldump stress stunnel dnstop-20080502 dnstracer
+# Download and install packages.
+pkg_add -x -B $IMAGE_ROOT/usr/local iperf nmap tightvnc-viewer rsync pftop trafshow pwgen hexedit hping mozilla-firefox mozilla-thunderbird gqview bzip2 epdfview-0.1.6p5 ipcalc BitchX imapfilter privoxy tor arping e-20071211p3 screen-4.0.3p1 smartmontools aescrypt aiccu amap angst httptunnel udptunnel hydra iodine minicom nano nbtscan nepim netfwd netpipe ngrep galculator mboxgrep nemesis newsfetch queso radiusniff scanssh smtpscan ssldump stress stunnel dnstop-20080502 dnstracer
     
-    # Leave the chroot environment.
-    exit
-
 # (Re-)Generate password databases.
 pwd_mkdb -d $IMAGE_ROOT/etc/ $IMAGE_ROOT/etc/master.passwd
 
