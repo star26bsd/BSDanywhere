@@ -2,6 +2,7 @@
 #
 # Build script for creating the BSDanywhere OpenBSD Live CD image.
 #
+# Copyright (c) 2009  Stephan A. Rickauer
 # Copyright (c) 2008-2009  Rene Maroufi, Stephan A. Rickauer
 #
 # All rights reserved.
@@ -199,6 +200,7 @@ install -b -B .orig -o root -g wheel -m 644 $CWD/etc_hosts.tpl $IMAGE_ROOT/etc/h
 install -b -B .orig -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT/etc/sysctl.conf
 install -b -B .orig -o root -g wheel -m 644 $CWD/etc_rc.tpl $IMAGE_ROOT/etc/rc
 install -b -B .orig -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
+install -b -B .orig -o root -g wheel -m 440 $CWD/etc_sudoers.tpl $IMAGE_ROOT/etc/sudoers
 install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
 
 # Install BSDanywhere specific template files.
@@ -211,7 +213,6 @@ install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/
     #
     chroot $IMAGE_ROOT
     ldconfig
-    echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 
     # Create 'live' account with an empty password.
     useradd -G wheel,operator,dialer -c "BSDanywhere Live CD Account" -d /home/live -k /etc/skel -s /bin/ksh -m live
