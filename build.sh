@@ -29,43 +29,33 @@
 #
 #
 # USAGE INFORMATION
-# Call this script with 'cat build.sh | ksh'. Do NOT invoke build.sh
-# directly as this will overwrite your entire / file system! Also
-# ensure $BASE resides on file system mounted without restrictions.
+# Execute this script with ./build
 
 #
 # Variables
 #
-export BASE=/specify/base/path
+BASE=/specify/base/path
 
-export ARCH=$(uname -m)
-export RELEASE=$(uname -r)
-export R=$(echo $RELEASE | awk -F. '{print $1$2 }')
+ARCH=$(uname -m)
+RELEASE=$(uname -r)
+R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 
-export IMAGE_ROOT=$BASE/image
-export CACHE_ROOT=$BASE/cache
+IMAGE_ROOT=$BASE/image
+CACHE_ROOT=$BASE/cache
 
-export MIRROR=http://mirror.switch.ch/ftp/pub/OpenBSD
-export PKG_PATH=$MIRROR/$RELEASE/packages/$ARCH/:http://mirror.startek.ch/OpenBSD/packages/$RELEASE/$ARCH/
+MIRROR=http://mirror.switch.ch/ftp/pub/OpenBSD
+PKG_PATH=$MIRROR/$RELEASE/packages/$ARCH/:http://mirror.startek.ch/OpenBSD/packages/$RELEASE/$ARCH/
 
-export CWD=$(pwd)
-export THIS_OS=$(uname)
-export MIN_SPACE_REQ='1600000'
+CWD=$(pwd)
+THIS_OS=$(uname)
+MIN_SPACE_REQ='1600000'
 
-export PKG_DBDIR=$IMAGE_ROOT/var/db/pkg
+PKG_DBDIR=$IMAGE_ROOT/var/db/pkg
 
 #
 # Functions go first.
 #
 examine_environment() {
-
-        echo -n 'Invocation: '
-        if [ "$0" = 'ksh' ]; then
-            echo 'via ksh (ok)'
-        else
-            echo "$0 directly (NOT ok)"
-            return 1
-        fi
 
         echo -n 'This user: '
         if [ "$USER" = 'root' ]; then
