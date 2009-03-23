@@ -43,15 +43,15 @@ R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 IMAGE_ROOT=$BASE/image
 CACHE_ROOT=$BASE/cache
 
+PKG_DBDIR=$IMAGE_ROOT/var/db/pkg
+export PKG_CACHE=$CACHE_ROOT
+
 MIRROR=http://mirror.switch.ch/ftp/pub/OpenBSD
-PKG_PATH=$MIRROR/$RELEASE/packages/$ARCH/:http://mirror.startek.ch/OpenBSD/packages/$RELEASE/$ARCH/
+PKG_PATH=$PKG_CACHE:$MIRROR/$RELEASE/packages/$ARCH/:http://mirror.startek.ch/OpenBSD/packages/$RELEASE/$ARCH/
 
 CWD=$(pwd)
 THIS_OS=$(uname)
 MIN_SPACE_REQ='1600000'
-
-PKG_DBDIR=$IMAGE_ROOT/var/db/pkg/
-PKG_CACHE=$CACHE_ROOT/
 
 
 #
@@ -175,7 +175,7 @@ prepare_filesystem() {
 
 install_packages() {
     # Download and install packages.
-    pkg_add -x -B $IMAGE_ROOT/ $(grep -v '#' $CWD/tools/package_list)
+    pkg_add -x -B $IMAGE_ROOT $(grep -v '#' $CWD/tools/package_list)
 }
 
 install_template_files() {
