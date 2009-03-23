@@ -1,6 +1,9 @@
+#!/bin/ksh
+#
 # $Id$
 #
 # Build script for creating the BSDanywhere OpenBSD Live CD image.
+# Execute this script with ./build
 #
 # Copyright (c) 2009  Stephan A. Rickauer
 # Copyright (c) 2008-2009  Rene Maroufi, Stephan A. Rickauer
@@ -26,10 +29,7 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-#
-# USAGE INFORMATION
-# Execute this script with ./build
+
 
 #
 # Variables
@@ -50,7 +50,9 @@ CWD=$(pwd)
 THIS_OS=$(uname)
 MIN_SPACE_REQ='1600000'
 
-PKG_DBDIR=$IMAGE_ROOT/var/db/pkg
+PKG_DBDIR=$IMAGE_ROOT/var/db/pkg/
+PKG_CACHE=$CACHE_ROOT/
+
 
 #
 # Functions go first.
@@ -171,6 +173,124 @@ prepare_filesystem() {
     echo done
 }
 
+install_packages() {
+    # Download and install packages.
+    pkg_add -x -B $IMAGE_ROOT/ $(grep -v '#' $CWD/tools/package_list)
+}
+
+install_template_files() {
+    # Install modified OpenBSD template files. Always make a backup copy so
+    # people can understand what the BSDanywhere specific modifications are.
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_fstab.tpl $IMAGE_ROOT/etc/fstab
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_myname.tpl $IMAGE_ROOT/etc/myname
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_motd.tpl $IMAGE_ROOT/etc/motd
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_hosts.tpl $IMAGE_ROOT/etc/hosts
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT/etc/sysctl.conf
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_rc.tpl $IMAGE_ROOT/etc/rc
+    install -b -B .orig -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
+    install -b -B .orig -o root -g wheel -m 440 $CWD/etc_sudoers.tpl $IMAGE_ROOT/etc/sudoers
+    install -b -B .orig -o root -g wheel -m 600 $CWD/etc_master.passwd.tpl $IMAGE_ROOT/etc/master.passwd
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_group.tpl $IMAGE_ROOT/etc/group
+    install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
+
+    # Install BSDanywhere specific template files.
+    install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
+    install -o root -g wheel -m 755 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
+    install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
+
+    # Install those template files that need prerequisites.
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/bin/
+    install -o 1000 -g 10 -m 555 $CWD/home_live_bin_mkbackup.tpl $IMAGE_ROOT/home/live/bin/mkbackup
+    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.profile.tpl $IMAGE_ROOT/home/live/.profile
+    install -o 1000 -g 10 -m 644 $CWD/home_live_.kshrc.tpl $IMAGE_ROOT/home/live/.kshrc
+    install -o 1000 -g 10 -m 644 $CWD/home_live_.xinitrc.tpl $IMAGE_ROOT/home/live/.xinitrc
+    install -o root -g wheel -m 644 $CWD/usr_local_share_applications_xterm.desktop.tpl $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
+
+    # E17 specific installs.
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/menus/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/menu/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/default/
+    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_menu_favorite.menu.tpl $IMAGE_ROOT/home/live/.e/e/applications/menu/favorite.menu
+    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_bar_default_.order.tpl $IMAGE_ROOT/home/live/.e/e/applications/bar/default/.order
+    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.config_menus_applications.menu.tpl $IMAGE_ROOT/home/live/.config/menus/applications.menu
+}
+
+generate_pwdb() {
+    # (Re-)Generate password databases.
+    pwd_mkdb -d $IMAGE_ROOT/etc/ $IMAGE_ROOT/etc/master.passwd
+}
+
+compress_binaries() {
+    # Using gzexe we can compress binaries to speed up
+    # cdrom reads by saving space at the same time!
+    echo 'Compressing binary executables ... '
+    find $IMAGE_ROOT/bin \
+         $IMAGE_ROOT/usr/bin \
+         $IMAGE_ROOT/usr/sbin \
+         $IMAGE_ROOT/usr/local/bin \
+         $IMAGE_ROOT/usr/local/sbin \
+         $IMAGE_ROOT/usr/X11R6/bin \
+         ! -perm -4000 ! -name stty ! -name cp ! -name mkdir \
+         ! -name chmod ! -name chgrp ! -name chown \
+         ! -name tar ! -name pax ! -name cpio \
+         ! -name sh ! -name ksh ! -name rksh \
+         -type f -size +200 -exec gzexe {} \;
+
+    echo -n 'Removing gzexe ~ copies ... '
+    find $IMAGE_ROOT/bin \
+         $IMAGE_ROOT/usr/bin \
+         $IMAGE_ROOT/usr/sbin \
+         $IMAGE_ROOT/usr/local/bin \
+         $IMAGE_ROOT/usr/local/sbin \
+         $IMAGE_ROOT/usr/X11R6/bin -type f -name "*~" -exec rm {} \;
+    echo 'done'
+}
+
+package_dirlayout() {
+    # Prepare to-be-mfs file systems by packaging their directories into
+    # individual tgz's. They will be untar'ed on each boot by /etc/rc.
+    # This will greatly reduce boot time compared to using -P in newfs.
+    for fs in var etc root home
+    do
+        echo -n "Packaging $fs ... "
+        tar cphf - $fs | gzip -9 > $IMAGE_ROOT/stand/$fs.tgz
+        echo done
+    done
+}
+
+prepare_image() {
+    # To save space on the image, we clean out what is not needed to boot.
+    rm -r $IMAGE_ROOT/var/* && ln -s /var/tmp $IMAGE_ROOT/tmp
+    rm -r $IMAGE_ROOT/home/*
+    rm $IMAGE_ROOT/etc/fbtab
+}
+
+burn_cdimage() {
+    # Finally, create the image.
+    cd $IMAGE_ROOT/..
+    echo 'Creating ISO image:'
+    mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog image
+}
+
+clean_buildenv() {
+    echo -n "Cleanup build environment ... "
+    rm /tmp/gzexe*
+    rm -rf $IMAGE_ROOT
+    echo done
+}
+
+
+#
+# Main
+#
+
 examine_environment
 [ $? = 0 ] || exit 1
 
@@ -178,98 +298,11 @@ prepare_build
 install_boot_files
 install_filesets
 prepare_filesystem
-
-# Install modified OpenBSD template files. Always make a backup copy so
-# people can understand what the BSDanywhere specific modifications are.
-install -b -B .orig -o root -g wheel -m 644 $CWD/etc_fstab.tpl $IMAGE_ROOT/etc/fstab
-install -b -B .orig -o root -g wheel -m 644 $CWD/etc_myname.tpl $IMAGE_ROOT/etc/myname
-install -b -B .orig -o root -g wheel -m 644 $CWD/etc_motd.tpl $IMAGE_ROOT/etc/motd
-install -b -B .orig -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
-install -b -B .orig -o root -g wheel -m 644 $CWD/etc_hosts.tpl $IMAGE_ROOT/etc/hosts
-install -b -B .orig -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT/etc/sysctl.conf
-install -b -B .orig -o root -g wheel -m 644 $CWD/etc_rc.tpl $IMAGE_ROOT/etc/rc
-install -b -B .orig -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
-install -b -B .orig -o root -g wheel -m 440 $CWD/etc_sudoers.tpl $IMAGE_ROOT/etc/sudoers
-install -b -B .orig -o root -g wheel -m 600 $CWD/etc_master.passwd.tpl $IMAGE_ROOT/etc/master.passwd
-install -b -B .orig -o root -g wheel -m 644 $CWD/etc_group.tpl $IMAGE_ROOT/etc/group
-install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
-
-# Install BSDanywhere specific template files.
-install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
-install -o root -g wheel -m 755 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
-install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
-
-# Download and install packages.
-pkg_add -x -B $IMAGE_ROOT/ $(grep -v '#' $CWD/tools/package_list)
-    
-# (Re-)Generate password databases.
-pwd_mkdb -d $IMAGE_ROOT/etc/ $IMAGE_ROOT/etc/master.passwd
-
-# Install those template files that need prerequisites.
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/bin/
-install -o 1000 -g 10 -m 555 $CWD/home_live_bin_mkbackup.tpl $IMAGE_ROOT/home/live/bin/mkbackup
-install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.profile.tpl $IMAGE_ROOT/home/live/.profile
-install -o 1000 -g 10 -m 644 $CWD/home_live_.kshrc.tpl $IMAGE_ROOT/home/live/.kshrc
-install -o 1000 -g 10 -m 644 $CWD/home_live_.xinitrc.tpl $IMAGE_ROOT/home/live/.xinitrc
-install -o root -g wheel -m 644 $CWD/usr_local_share_applications_xterm.desktop.tpl $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
-
-# E17 specific installs.
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/menus/
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/menu/
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/
-install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/default/
-install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_menu_favorite.menu.tpl $IMAGE_ROOT/home/live/.e/e/applications/menu/favorite.menu
-install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_bar_default_.order.tpl $IMAGE_ROOT/home/live/.e/e/applications/bar/default/.order
-install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.config_menus_applications.menu.tpl $IMAGE_ROOT/home/live/.config/menus/applications.menu
-
-# Using gzexe we can compress binaries to speed up
-# cdrom reads by saving space at the same time!
-echo 'Compressing binary executables ... '
-find $IMAGE_ROOT/bin \
-     $IMAGE_ROOT/usr/bin \
-     $IMAGE_ROOT/usr/sbin \
-     $IMAGE_ROOT/usr/local/bin \
-     $IMAGE_ROOT/usr/local/sbin \
-     $IMAGE_ROOT/usr/X11R6/bin \
-     ! -perm -4000 ! -name stty ! -name cp ! -name mkdir \
-     ! -name chmod ! -name chgrp ! -name chown \
-     ! -name tar ! -name pax ! -name cpio \
-     ! -name sh ! -name ksh ! -name rksh \
-     -type f -size +200 -exec gzexe {} \;
-
-echo -n 'Removing gzexe ~ copies ... '
-find $IMAGE_ROOT/bin \
-     $IMAGE_ROOT/usr/bin \
-     $IMAGE_ROOT/usr/sbin \
-     $IMAGE_ROOT/usr/local/bin \
-     $IMAGE_ROOT/usr/local/sbin \
-     $IMAGE_ROOT/usr/X11R6/bin -type f -name "*~" -exec rm {} \;
-echo 'done'
-
-# Prepare to-be-mfs file systems by packaging their directories into
-# individual tgz's. They will be untar'ed on each boot by /etc/rc.
-# This will greatly reduce boot time compared to using -P in newfs.
-for fs in var etc root home
-do
-    echo -n "Packaging $fs ... "
-    tar cphf - $fs | gzip -9 > $IMAGE_ROOT/stand/$fs.tgz
-    echo done
-done
-
-# Cleanup build environment.
-rm /tmp/gzexe*
-
-# To save space on the image, we clean out what is not needed to boot.
-rm -r $IMAGE_ROOT/var/* && ln -s /var/tmp $IMAGE_ROOT/tmp
-rm -r $IMAGE_ROOT/home/*
-rm $IMAGE_ROOT/etc/fbtab
-
-# Finally, create the image.
-cd $IMAGE_ROOT/..
-echo 'Creating ISO image:'
-mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog image
+install_packages
+install_template_files
+generate_pwdb
+compress_binaries
+package_dirlayout
+prepare_image
+burn_cdimage
+clean_buildenv
