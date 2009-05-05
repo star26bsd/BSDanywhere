@@ -43,11 +43,11 @@ R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 IMAGE_ROOT=$BASE/image
 CACHE_ROOT=$BASE/cache
 
-PKG_DBDIR=$IMAGE_ROOT/var/db/pkg
+export PKG_DBDIR=$IMAGE_ROOT/var/db/pkg
 export PKG_CACHE=$CACHE_ROOT
 
 MIRROR=http://mirror.switch.ch/ftp/pub/OpenBSD
-PKG_PATH=$PKG_CACHE:$MIRROR/$RELEASE/packages/$ARCH/:http://mirror.startek.ch/OpenBSD/packages/$RELEASE/$ARCH/
+export PKG_PATH=$PKG_CACHE:$MIRROR/$RELEASE/packages/$ARCH/
 
 CWD=$(pwd)
 THIS_OS=$(uname)
