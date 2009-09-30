@@ -10,7 +10,6 @@ BitchX
 bzip2
 dnstop-20080502
 dnstracer
-e-20071211p3
 epdfview-0.1.6p5
 galculator
 gqview
@@ -18,6 +17,7 @@ hexedit
 hping
 httptunnel
 hydra
+icewm
 imapfilter
 iodine
 ipcalc
@@ -41,7 +41,6 @@ queso
 radiusniff
 rsync
 scanssh
-screen-4.0.3p1
 smartmontools
 smtpscan
 ssldump

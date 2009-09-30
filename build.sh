@@ -208,17 +208,9 @@ install_template_files() {
     install -o 1000 -g 10 -m 644 $CWD/home_live_.xinitrc.tpl $IMAGE_ROOT/home/live/.xinitrc
     install -o root -g wheel -m 644 $CWD/usr_local_share_applications_xterm.desktop.tpl $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
 
-    # E17 specific installs.
+    # Window manager specific installs.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/menus/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/menu/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.e/e/applications/bar/default/
-    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_menu_favorite.menu.tpl $IMAGE_ROOT/home/live/.e/e/applications/menu/favorite.menu
-    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.e_e_applications_bar_default_.order.tpl $IMAGE_ROOT/home/live/.e/e/applications/bar/default/.order
     install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.config_menus_applications.menu.tpl $IMAGE_ROOT/home/live/.config/menus/applications.menu
 }
 
