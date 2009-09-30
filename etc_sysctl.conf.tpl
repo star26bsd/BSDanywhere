@@ -22,7 +22,7 @@ net.inet6.ip6.accept_rtadv=1	# 1=Permit IPv6 autoconf (forwarding must be 0)
 #net.inet.carp.preempt=1	# 1=Enable carp(4) preemption
 #net.inet.carp.log=1		# 1=Enable logging of carp(4) packets
 #ddb.panic=0			# 0=Do not drop into ddb on a kernel panic
-#ddb.console=1			# 1=Permit entry of ddb from the console
+ddb.console=1			# 1=Permit entry of ddb from the console
 #fs.posix.setuid=0		# 0=Traditional BSD chown() semantics
 #vm.swapencrypt.enable=0	# 0=Do not encrypt pages that go to swap
 #vfs.nfs.iothreads=4		# Number of nfsio kernel threads
