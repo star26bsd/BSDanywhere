@@ -181,37 +181,37 @@ install_packages() {
 install_template_files() {
     # Install modified OpenBSD template files. Always make a backup copy so
     # people can understand what the BSDanywhere specific modifications are.
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_fstab.tpl $IMAGE_ROOT/etc/fstab
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_myname.tpl $IMAGE_ROOT/etc/myname
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_motd.tpl $IMAGE_ROOT/etc/motd
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_boot.conf.tpl $IMAGE_ROOT/etc/boot.conf
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_hosts.tpl $IMAGE_ROOT/etc/hosts
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_sysctl.conf.tpl $IMAGE_ROOT/etc/sysctl.conf
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_rc.tpl $IMAGE_ROOT/etc/rc
-    install -b -B .orig -o root -g wheel -m 755 $CWD/etc_rc.local.tpl $IMAGE_ROOT/etc/rc.local 
-    install -b -B .orig -o root -g wheel -m 440 $CWD/etc_sudoers.tpl $IMAGE_ROOT/etc/sudoers
-    install -b -B .orig -o root -g wheel -m 600 $CWD/etc_master.passwd.tpl $IMAGE_ROOT/etc/master.passwd
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc_group.tpl $IMAGE_ROOT/etc/group
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/fstab $IMAGE_ROOT/etc/fstab
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/myname $IMAGE_ROOT/etc/myname
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/motd $IMAGE_ROOT/etc/motd
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/boot.conf $IMAGE_ROOT/etc/boot.conf
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/hosts $IMAGE_ROOT/etc/hosts
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/sysctl.conf $IMAGE_ROOT/etc/sysctl.conf
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/rc $IMAGE_ROOT/etc/rc
+    install -b -B .orig -o root -g wheel -m 755 $CWD/etc/rc.local $IMAGE_ROOT/etc/rc.local 
+    install -b -B .orig -o root -g wheel -m 440 $CWD/etc/sudoers $IMAGE_ROOT/etc/sudoers
+    install -b -B .orig -o root -g wheel -m 600 $CWD/etc/master.passwd $IMAGE_ROOT/etc/master.passwd
+    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/group $IMAGE_ROOT/etc/group
     install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
 
     # Install BSDanywhere specific template files.
-    install -o root -g wheel -m 644 $CWD/etc_welcome.tpl $IMAGE_ROOT/etc/welcome
-    install -o root -g wheel -m 755 $CWD/etc_rc.restore.tpl $IMAGE_ROOT/etc/rc.restore
-    install -o root -g wheel -m 755 $CWD/usr_local_sbin_syncsys.tpl $IMAGE_ROOT/usr/local/sbin/syncsys
+    install -o root -g wheel -m 644 $CWD/etc/welcome $IMAGE_ROOT/etc/welcome
+    install -o root -g wheel -m 755 $CWD/etc/rc.restore $IMAGE_ROOT/etc/rc.restore
+    install -o root -g wheel -m 755 $CWD/usr/local/sbin/syncsys $IMAGE_ROOT/usr/local/sbin/syncsys
 
     # Install those template files that need prerequisites.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/bin/
-    install -o 1000 -g 10 -m 555 $CWD/home_live_bin_mkbackup.tpl $IMAGE_ROOT/home/live/bin/mkbackup
-    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.profile.tpl $IMAGE_ROOT/home/live/.profile
-    install -o 1000 -g 10 -m 644 $CWD/home_live_.kshrc.tpl $IMAGE_ROOT/home/live/.kshrc
-    install -o 1000 -g 10 -m 644 $CWD/home_live_.xinitrc.tpl $IMAGE_ROOT/home/live/.xinitrc
-    install -o root -g wheel -m 644 $CWD/usr_local_share_applications_xterm.desktop.tpl $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
+    install -o 1000 -g 10 -m 555 $CWD/home/live/bin/mkbackup $IMAGE_ROOT/home/live/bin/mkbackup
+    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home/live/.profile $IMAGE_ROOT/home/live/.profile
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.kshrc $IMAGE_ROOT/home/live/.kshrc
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.xinitrc $IMAGE_ROOT/home/live/.xinitrc
+    install -o root -g wheel -m 644 $CWD/usr/local/share/applications/xterm.desktop $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
 
     # Window manager specific installs.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/menus/
-    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home_live_.config_menus_applications.menu.tpl $IMAGE_ROOT/home/live/.config/menus/applications.menu
+    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home/live/.config/menus/applications.menu $IMAGE_ROOT/home/live/.config/menus/applications.menu
 }
 
 generate_pwdb() {
