@@ -179,25 +179,23 @@ install_packages() {
 }
 
 install_template_files() {
-    # Install modified OpenBSD template files. Always make a backup copy so
-    # people can understand what the BSDanywhere specific modifications are.
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/fstab $IMAGE_ROOT/etc/fstab
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/myname $IMAGE_ROOT/etc/myname
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/motd $IMAGE_ROOT/etc/motd
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/boot.conf $IMAGE_ROOT/etc/boot.conf
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/hosts $IMAGE_ROOT/etc/hosts
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/sysctl.conf $IMAGE_ROOT/etc/sysctl.conf
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/rc $IMAGE_ROOT/etc/rc
-    install -b -B .orig -o root -g wheel -m 755 $CWD/etc/rc.local $IMAGE_ROOT/etc/rc.local 
-    install -b -B .orig -o root -g wheel -m 440 $CWD/etc/sudoers $IMAGE_ROOT/etc/sudoers
-    install -b -B .orig -o root -g wheel -m 600 $CWD/etc/master.passwd $IMAGE_ROOT/etc/master.passwd
-    install -b -B .orig -o root -g wheel -m 644 $CWD/etc/group $IMAGE_ROOT/etc/group
+    # Install template files with BSDanywhere-specific changes.
     install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
-
-    # Install BSDanywhere specific template files.
+    install -o root -g wheel -m 644 $CWD/etc/boot.conf $IMAGE_ROOT/etc/boot.conf
+    install -o root -g wheel -m 644 $CWD/etc/fstab $IMAGE_ROOT/etc/fstab
+    install -o root -g wheel -m 440 $CWD/etc/sudoers $IMAGE_ROOT/etc/sudoers
     install -o root -g wheel -m 644 $CWD/etc/welcome $IMAGE_ROOT/etc/welcome
     install -o root -g wheel -m 755 $CWD/etc/rc.restore $IMAGE_ROOT/etc/rc.restore
     install -o root -g wheel -m 755 $CWD/usr/local/sbin/syncsys $IMAGE_ROOT/usr/local/sbin/syncsys
+
+    # Apply BSDanywhere-specific diffs to OpenBSD originals.
+    patch -s $IMAGE_ROOT/etc/myname $CWD/etc/myname.diff
+    patch -s $IMAGE_ROOT/etc/motd $CWD/etc/motd.diff
+    patch -s $IMAGE_ROOT/etc/sysctl.conf $CWD/etc/sysctl.conf.diff
+    patch -s $IMAGE_ROOT/etc/rc $CWD/etc/rc.diff
+    patch -s $IMAGE_ROOT/etc/rc.local $CWD/etc/rc.local.diff
+    patch -s $IMAGE_ROOT/etc/master.passwd $CWD/etc/master.passwd.diff
+    patch -s $IMAGE_ROOT/etc/group $CWD/etc/group.diff 
 
     # Install those template files that need prerequisites.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/
