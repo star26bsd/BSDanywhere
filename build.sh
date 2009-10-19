@@ -197,7 +197,7 @@ install_template_files() {
     patch -s $IMAGE_ROOT/etc/master.passwd $CWD/etc/master.passwd.diff
     patch -s $IMAGE_ROOT/etc/group $CWD/etc/group.diff 
 
-    # Install those template files that need prerequisites.
+    # Install template files which need prerequisites.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/bin/
     install -o 1000 -g 10 -m 555 $CWD/home/live/bin/mkbackup $IMAGE_ROOT/home/live/bin/mkbackup
@@ -206,14 +206,14 @@ install_template_files() {
     install -o 1000 -g 10 -m 644 $CWD/home/live/.xinitrc $IMAGE_ROOT/home/live/.xinitrc
     install -o root -g wheel -m 644 $CWD/usr/local/share/applications/xterm.desktop $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
 
-    # Window manager specific installs.
+    # Install window manager specific prerequisites.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/menus/
     install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home/live/.config/menus/applications.menu $IMAGE_ROOT/home/live/.config/menus/applications.menu
 }
 
 generate_pwdb() {
-    # (Re-)Generate password databases.
+    # Regenerate password database.
     pwd_mkdb -d $IMAGE_ROOT/etc/ $IMAGE_ROOT/etc/master.passwd
 }
 
