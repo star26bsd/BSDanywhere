@@ -1,2 +1,3 @@
 ShutdownCommand="sudo shutdown -h now"
 RebootCommand="sudo shutdown -r now"
+LockCommand="/usr/X11R6/bin/Xlock -mode blank"
