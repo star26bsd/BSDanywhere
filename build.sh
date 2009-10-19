@@ -178,7 +178,17 @@ install_packages() {
     pkg_add -x -B $IMAGE_ROOT $(grep -v '#' $CWD/tools/package_list)
 }
 
+configure_packages() {
+    echo -n 'Configure some packages ... '
+    # Python
+    ln -sf /usr/local/bin/python2.5 $IMAGE_ROOT/usr/local/bin/python
+    ln -sf /usr/local/bin/python2.5-config $IMAGE_ROOT/usr/local/bin/python-config
+    ln -sf /usr/local/bin/pydoc2.5 $IMAGE_ROOT/usr/local/bin/pydoc
+    echo done
+}
+
 install_template_files() {
+    echo -n 'Installing template files and patching originals ... '
     # Install template files with BSDanywhere-specific changes.
     install -o root -g wheel -m 644 /dev/null $IMAGE_ROOT/fastboot
     install -o root -g wheel -m 644 $CWD/etc/boot.conf $IMAGE_ROOT/etc/boot.conf
@@ -204,12 +214,18 @@ install_template_files() {
     install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home/live/.profile $IMAGE_ROOT/home/live/.profile
     install -o 1000 -g 10 -m 644 $CWD/home/live/.kshrc $IMAGE_ROOT/home/live/.kshrc
     install -o 1000 -g 10 -m 644 $CWD/home/live/.xinitrc $IMAGE_ROOT/home/live/.xinitrc
+    install -d -o root -g wheel -m 755 $IMAGE_ROOT/usr/local/share/applications/
     install -o root -g wheel -m 644 $CWD/usr/local/share/applications/xterm.desktop $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
 
     # Install window manager specific prerequisites.
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/shutdown $IMAGE_ROOT/home/live/.icewm/preferences
+    install -o 1000 -g 10 -m 755 $CWD/home/live/.icewm/shutdown $IMAGE_ROOT/home/live/.icewm/shutdown
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/menus/
     install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home/live/.config/menus/applications.menu $IMAGE_ROOT/home/live/.config/menus/applications.menu
+
+    echo done
 }
 
 generate_pwdb() {
@@ -270,7 +286,7 @@ burn_cdimage() {
 }
 
 clean_buildenv() {
-    echo -n "Cleanup build environment ... "
+    echo -n "Cleaning up build environment ... "
     rm /tmp/gzexe*
     rm -rf $IMAGE_ROOT
     echo done
@@ -289,6 +305,7 @@ install_boot_files
 install_filesets
 prepare_filesystem
 install_packages
+configure_packages
 install_template_files
 generate_pwdb
 compress_binaries
