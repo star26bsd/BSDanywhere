@@ -1,0 +1,2 @@
+ShutdownCommand="sudo shutdown -h now"
+RebootCommand="sudo shutdown -r now"
