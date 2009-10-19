@@ -195,6 +195,7 @@ install_template_files() {
     install -o root -g wheel -m 644 $CWD/etc/fstab $IMAGE_ROOT/etc/fstab
     install -o root -g wheel -m 440 $CWD/etc/sudoers $IMAGE_ROOT/etc/sudoers
     install -o root -g wheel -m 644 $CWD/etc/welcome $IMAGE_ROOT/etc/welcome
+    install -o root -g wheel -m 644 $CWD/etc/rc.conf.local $IMAGE_ROOT/etc/rc.conf.local
     install -o root -g wheel -m 755 $CWD/etc/rc.restore $IMAGE_ROOT/etc/rc.restore
     install -o root -g wheel -m 755 $CWD/usr/local/sbin/syncsys $IMAGE_ROOT/usr/local/sbin/syncsys
 
@@ -219,6 +220,7 @@ install_template_files() {
 
     # Install window manager specific prerequisites.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/menu $IMAGE_ROOT/home/live/.icewm/menu
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/preferences $IMAGE_ROOT/home/live/.icewm/preferences
     install -o 1000 -g 10 -m 755 $CWD/home/live/.icewm/shutdown $IMAGE_ROOT/home/live/.icewm/shutdown
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/

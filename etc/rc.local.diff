@@ -5,6 +5,12 @@
  # Add your local startup actions here.
  
 -echo '.'
++# Famd required by pcman file manager.
++if [ -x /usr/local/sbin/famd ]; then
++	echo -n ' famd'
++	/usr/local/sbin/famd -T 0
++fi
+
 +# BSDanywhere should always run on low memory systems. However, if
 +# we find enough memory, we can offer some performance improvements.
 +sub_mfsmount() {

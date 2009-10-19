@@ -1,0 +1,2 @@
+# famd requires the portmapper.
+portmap="YES"
