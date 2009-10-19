@@ -1,10 +1,12 @@
---- rc	Wed Sep 30 20:44:31 2009
-+++ rc	Mon Oct 19 12:42:08 2009
-@@ -240,8 +240,29 @@
+--- rc	Mon Oct 19 15:27:34 2009
++++ rc	Mon Oct 19 15:28:54 2009
+@@ -239,9 +239,30 @@
+ 
  umount -a >/dev/null 2>&1
  mount -a -t nonfs,vnd
- mount -uw /		# root on nfs requires this, others aren't hurt
+-mount -uw /		# root on nfs requires this, others aren't hurt
 -rm -f /fastboot		# XXX (root now writeable)
++mount -uw / >/dev/null 2>&1		# root on nfs requires this, others aren't hurt
 +#rm -f /fastboot		# XXX (root now writeable)
  
 +# BSDanywhere specific: Set timemark for syncsys.
