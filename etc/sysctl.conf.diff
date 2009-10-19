@@ -1,5 +1,14 @@
---- sysctl.conf	Mon Oct 19 12:04:16 2009
-+++ sysctl.conf	Mon Oct 19 12:08:01 2009
+--- sysctl.conf	Mon Oct 19 14:48:40 2009
++++ sysctl.conf	Mon Oct 19 14:49:25 2009
+@@ -12,7 +12,7 @@
+ #net.inet6.ip6.forwarding=1	# 1=Permit forwarding (routing) of IPv6 packets
+ #net.inet6.ip6.mforwarding=1	# 1=Permit forwarding (routing) of IPv6 multicast packets
+ #net.inet6.ip6.multipath=1	# 1=Enable IPv6 multipath routing
+-#net.inet6.ip6.accept_rtadv=1	# 1=Permit IPv6 autoconf (forwarding must be 0)
++net.inet6.ip6.accept_rtadv=1	# 1=Permit IPv6 autoconf (forwarding must be 0)
+ #net.inet.tcp.rfc1323=0		# 0=Disable TCP RFC1323 extensions (for if tcp is slow)
+ #net.inet.tcp.rfc3390=0		# 0=Disable RFC3390 for TCP window increasing
+ #net.inet.esp.enable=0		# 0=Disable the ESP IPsec protocol
 @@ -24,7 +24,7 @@
  #net.inet.carp.preempt=1	# 1=Enable carp(4) preemption
  #net.inet.carp.log=1		# 1=Enable logging of carp(4) packets
