@@ -1,0 +1,16 @@
+prog XTerminal - xterm
+prog FileManager - pcmanfm
+separator
+menu Internet folder {
+     prog Firefox - firefox35
+     prog Thunderbird - mozilla-thunderbird
+     prog Irssi - xterm -e irssi
+     prog OpenNX - opennx
+}
+menu Office folder {
+     prog PDFViewer - epdfview
+     prog Galculator - galculator
+}
+menu Graphics folder {
+     prog GQview - gqview
+}
