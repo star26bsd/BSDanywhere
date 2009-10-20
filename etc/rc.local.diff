@@ -1,22 +1,14 @@
---- rc.local	Wed Sep 30 20:44:31 2009
-+++ rc.local	Mon Oct 19 17:28:30 2009
-@@ -9,5 +9,134 @@
+--- rc.local	Mon Oct 19 12:09:23 2009
++++ rc.local	Mon Oct 19 12:11:53 2009
+@@ -9,5 +9,126 @@
  
  # Add your local startup actions here.
  
 -echo '.'
-+# Famd required by pcman file manager.
-+if [ -x /usr/local/sbin/famd ]; then
-+	echo -n ' famd'
-+	/usr/local/sbin/famd -T 0
-+fi
- 
-+echo .
-+
 +# BSDanywhere should always run on low memory systems. However, if
 +# we find enough memory, we can offer some performance improvements.
 +sub_mfsmount() {
-+
+ 
 +    # convert into mb due to ksh's 32 bit limit
 +    physmem=$(echo $(sysctl -n hw.physmem) / 1048576 | bc )
 +

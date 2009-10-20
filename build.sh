@@ -195,7 +195,6 @@ install_template_files() {
     install -o root -g wheel -m 644 $CWD/etc/fstab $IMAGE_ROOT/etc/fstab
     install -o root -g wheel -m 440 $CWD/etc/sudoers $IMAGE_ROOT/etc/sudoers
     install -o root -g wheel -m 644 $CWD/etc/welcome $IMAGE_ROOT/etc/welcome
-    install -o root -g wheel -m 644 $CWD/etc/rc.conf.local $IMAGE_ROOT/etc/rc.conf.local
     install -o root -g wheel -m 755 $CWD/etc/rc.restore $IMAGE_ROOT/etc/rc.restore
     install -o root -g wheel -m 755 $CWD/usr/local/sbin/syncsys $IMAGE_ROOT/usr/local/sbin/syncsys
 

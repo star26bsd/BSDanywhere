@@ -9,6 +9,7 @@ arping
 bzip2
 dnstop-20080502
 dnstracer
+emelfm2
 epdfview-0.1.7p0
 galculator
 gqview
@@ -35,7 +36,6 @@ newsfetch
 ngrep
 nmap
 opennx
-pcmanfm
 pftop
 privoxy
 pwgen
