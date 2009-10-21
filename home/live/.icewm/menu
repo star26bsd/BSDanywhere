@@ -1,5 +1,5 @@
 prog Terminal xterm_16x16.xpm xterm
-prog "File Manager" /usr/local/share/pixmaps/emelfm2/emelfm2_24.png emelfm2
+prog "File Manager" /usr/local/share/pixmaps/xfe.png xfe
 separator
 menu Internet folder {
      prog Firefox /usr/local/firefox35/icons/mozicon16.xpm firefox35
@@ -7,16 +7,18 @@ menu Internet folder {
      prog Mutt xterm_16x16.xpm xterm -e mutt
      prog Irssi xterm_16x16.xpm xterm -e irssi
      prog OpenNX /usr/local/share/icons/nx.png opennx
-     prog VNCviewer app_16x16.xpm vncviewer
+     prog "VNC Viewer" app_16x16.xpm vncviewer
 }
 
 menu Office folder {
-     prog PDFViewer /usr/local/share/epdfview/pixmaps/icon_epdfview-24.png epdfview
+     prog "Text Editor" /usr/local/share/pixmaps/xfw.png xfw
+     prog "Text Viewer" /usr/local/share/pixmaps/xfv.png xfv
+     prog "PDF Viewer" /usr/local/share/epdfview/pixmaps/icon_epdfview-24.png epdfview
      prog Calculator app_16x16.xpm calcoo
 }
 
 menu Graphics folder {
-     prog ImageViewer /usr/local/share/pixmaps/gpicview.png gpicview
+     prog "Image Viewer" /usr/local/share/pixmaps/xfi.png xfi
 }
 
 menu Accessories folder {

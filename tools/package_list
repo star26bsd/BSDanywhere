@@ -10,10 +10,8 @@ bzip2
 calcoo
 dnstop-20080502
 dnstracer
-emelfm2
 epdfview-0.1.7p0
 firefox35
-gpicview
 hexedit
 hping
 httptunnel
@@ -46,3 +44,4 @@ stunnel
 tightvnc-viewer
 trafshow
 udptunnel
+xfe
