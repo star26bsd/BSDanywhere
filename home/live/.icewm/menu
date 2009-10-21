@@ -4,10 +4,10 @@ separator
 menu Internet folder {
      prog Firefox /usr/local/firefox35/icons/mozicon16.xpm firefox35
      prog Thunderbird /usr/local/mozilla-thunderbird/icons/mozicon16.xpm mozilla-thunderbird
-     prog Mutt app_16x16.xpm mutt
+     prog Mutt app_16x16.xpm xterm -e mutt
      prog Irssi app_16x16.xpm xterm -e irssi
      prog OpenNX /usr/local/share/icons/nx.png opennx
-     prog VNCviewer /usr/local/share/icons/nx.png vncviewer
+     prog VNCviewer app_16x16.xpm vncviewer
 }
 
 menu Office folder {
@@ -19,14 +19,13 @@ menu Graphics folder {
      prog ImageViewer /usr/local/share/pixmaps/gpicview.png gpicview
 }
 
-menu Accessories {
+menu Accessories folder {
      prog XClock app_16x16.xpm xclock
-     prog pwgen - xterm -e ksh -c "pwgen -s"
      prog syncsys - xterm -e ksh -c syncsys
      prog mkbackup - xterm -e ksh -c mkbackup
 }
 
-menu "System Tools" {
+menu "System Tools" folder {
      prog systat - xterm -e ksh -c "systat 1"
      prog top - xterm -e ksh -c "top -s1"
      prog pftop - xterm -e ksh -c "sudo pftop -s1"
