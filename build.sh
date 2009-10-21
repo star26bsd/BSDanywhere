@@ -204,6 +204,7 @@ install_template_files() {
     patch -s $IMAGE_ROOT/etc/group $CWD/etc/group.diff 
 
     # Install template files which need prerequisites.
+    install -o 1000 -g 10 -m 600 $IMAGE_ROOT/var/mail/root $IMAGE_ROOT/var/mail/live
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/bin/
     install -o 1000 -g 10 -m 555 $CWD/home/live/bin/mkbackup $IMAGE_ROOT/home/live/bin/mkbackup
@@ -217,6 +218,7 @@ install_template_files() {
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/wallpaper.jpg $IMAGE_ROOT/home/live/.icewm/wallpaper.jpg
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/menu $IMAGE_ROOT/home/live/.icewm/menu
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/toolbar $IMAGE_ROOT/home/live/.icewm/toolbar
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/preferences $IMAGE_ROOT/home/live/.icewm/preferences
     install -o 1000 -g 10 -m 755 $CWD/home/live/.icewm/shutdown $IMAGE_ROOT/home/live/.icewm/shutdown
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
