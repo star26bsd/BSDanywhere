@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -A packages net/iperf net/nmap net/tightvnc net/rsync sysutils/pftop net/trafshow security/pwgen editors/hexedit net/hping www/firefox35 mail/mozilla-thunderbird graphics/gqview archivers/bzip2 print/epdfview net/ipcalc net/irssi net/irssi-icb mail/imapfilter math/galculator net/arping sysutils/smartmontools security/aescrypt net/aiccu security/amap net/angst net/httptunnel net/udptunnel net/iodine editors/nano net/nbtscan net/netfwd net/netpipe mail/mboxgrep net/nemesis security/radiusniff security/scanssh security/smtpscan net/ssldump sysutils/stress security/stunnel net/dnstop net/dnstracer x11/nx/opennx x11/emelfm2 mail/mutt-sasl
+set -A packages net/iperf net/nmap net/tightvnc net/rsync sysutils/pftop net/trafshow security/pwgen editors/hexedit net/hping www/firefox35 mail/mozilla-thunderbird graphics/gpicview archivers/bzip2 print/epdfview net/ipcalc net/irssi net/irssi-icb mail/imapfilter math/calcoo net/arping sysutils/smartmontools security/aescrypt net/aiccu security/amap net/angst net/httptunnel net/udptunnel net/iodine editors/nano net/nbtscan net/netfwd net/netpipe mail/mboxgrep net/nemesis security/radiusniff security/scanssh security/smtpscan net/ssldump sysutils/stress security/stunnel net/dnstop net/dnstracer x11/nx/opennx x11/emelfm2 mail/mutt-sasl
 
 echo ${packages[*]} | tr " " "\n" | while read pkg
 do

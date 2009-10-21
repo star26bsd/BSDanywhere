@@ -180,10 +180,6 @@ install_packages() {
 
 configure_packages() {
     echo -n 'Configure some packages ... '
-    # Python
-    ln -sf /usr/local/bin/python2.5 $IMAGE_ROOT/usr/local/bin/python
-    ln -sf /usr/local/bin/python2.5-config $IMAGE_ROOT/usr/local/bin/python-config
-    ln -sf /usr/local/bin/pydoc2.5 $IMAGE_ROOT/usr/local/bin/pydoc
     echo done
 }
 
