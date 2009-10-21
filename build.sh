@@ -215,6 +215,7 @@ install_template_files() {
 
     # Install window manager specific prerequisites.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/wallpaper.jpg $IMAGE_ROOT/home/live/.icewm/wallpaper.jpg
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/menu $IMAGE_ROOT/home/live/.icewm/menu
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/preferences $IMAGE_ROOT/home/live/.icewm/preferences
     install -o 1000 -g 10 -m 755 $CWD/home/live/.icewm/shutdown $IMAGE_ROOT/home/live/.icewm/shutdown

@@ -1,16 +1,37 @@
-prog XTerminal - xterm
-prog FileManager - pcmanfm
+prog Terminal xterm_16x16.xpm xterm
+prog "File Manager" /usr/local/share/pixmaps/emelfm2/emelfm2_24.png emelfm2
 separator
 menu Internet folder {
-     prog Firefox - firefox35
-     prog Thunderbird - mozilla-thunderbird
-     prog Irssi - xterm -e irssi
-     prog OpenNX - opennx
+     prog Firefox /usr/local/firefox35/icons/mozicon16.xpm firefox35
+     prog Thunderbird /usr/local/mozilla-thunderbird/icons/mozicon16.xpm mozilla-thunderbird
+     prog Mutt app_16x16.xpm mutt
+     prog Irssi app_16x16.xpm xterm -e irssi
+     prog OpenNX /usr/local/share/icons/nx.png opennx
+     prog VNCviewer /usr/local/share/icons/nx.png vncviewer
 }
+
 menu Office folder {
-     prog PDFViewer - epdfview
-     prog Galculator - galculator
+     prog PDFViewer /usr/local/share/epdfview/pixmaps/icon_epdfview-24.png epdfview
+     prog Calculator app_16x16.xpm calcoo
 }
+
 menu Graphics folder {
-     prog GQview - gqview
+     prog ImageViewer /usr/local/share/pixmaps/gpicview.png gpicview
+}
+
+menu Accessories {
+     prog XClock app_16x16.xpm xclock
+     prog pwgen - xterm -e ksh -c "pwgen -s"
+     prog syncsys - xterm -e ksh -c syncsys
+     prog mkbackup - xterm -e ksh -c mkbackup
+}
+
+menu "System Tools" {
+     prog systat - xterm -e ksh -c "systat 1"
+     prog top - xterm -e ksh -c "top -s1"
+     prog pftop - xterm -e ksh -c "sudo pftop -s1"
+     prog trafshow - xterm -e ksh -c "sudo trafshow"
+     prog vmstat - xterm -e ksh -c "vmstat 1"
+     prog iostat - xterm -e ksh -c "iostat 1"
+     prog "iperf (server)" - xterm -e ksh -c "iperf -s"
 }
