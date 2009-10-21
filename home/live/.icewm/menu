@@ -32,5 +32,5 @@ menu "System Tools" folder {
      prog trafshow xterm_16x16.xpm xterm -e ksh -c "sudo trafshow"
      prog vmstat xterm_16x16.xpm xterm -e ksh -c "vmstat 1"
      prog iostat xterm_16x16.xpm xterm -e ksh -c "iostat 1"
-     prog "iperf (server)" - xterm -e ksh -c "iperf -s"
+     prog "iperf (server)" xterm_16x16.xpm xterm -e ksh -c "iperf -s"
 }
