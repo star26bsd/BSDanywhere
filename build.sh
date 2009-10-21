@@ -212,7 +212,6 @@ install_template_files() {
     install -o 1000 -g 10 -m 644 $CWD/home/live/.kshrc $IMAGE_ROOT/home/live/.kshrc
     install -o 1000 -g 10 -m 644 $CWD/home/live/.xinitrc $IMAGE_ROOT/home/live/.xinitrc
     install -d -o root -g wheel -m 755 $IMAGE_ROOT/usr/local/share/applications/
-    install -o root -g wheel -m 644 $CWD/usr/local/share/applications/xterm.desktop $IMAGE_ROOT/usr/local/share/applications/xterm.desktop
 
     # Install window manager specific prerequisites.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/
@@ -221,9 +220,10 @@ install_template_files() {
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/toolbar $IMAGE_ROOT/home/live/.icewm/toolbar
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/preferences $IMAGE_ROOT/home/live/.icewm/preferences
     install -o 1000 -g 10 -m 755 $CWD/home/live/.icewm/shutdown $IMAGE_ROOT/home/live/.icewm/shutdown
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/
-    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.config/menus/
-    install -b -B .orig -o 1000 -g 10 -m 644 $CWD/home/live/.config/menus/applications.menu $IMAGE_ROOT/home/live/.config/menus/applications.menu
+
+    # XFE (file manager)
+    install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.xfe/
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.xfe/xferc $IMAGE_ROOT/home/live/.xfe/xferc
 
     echo done
 }
