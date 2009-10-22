@@ -222,7 +222,7 @@ install_template_files() {
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/themes/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/themes/icedesert/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/themes/icedesert/taskbar/
-    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/themes/icedesert/taskbar/openbsd.gif $IMAGE_ROOT/home/live/.icewm/themes/icedesert/taskbar/openbsd.gif
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/themes/icedesert/taskbar/start.xpm $IMAGE_ROOT/home/live/.icewm/themes/icedesert/taskbar/start.xpm
 
     # XFE (file manager)
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.xfe/
