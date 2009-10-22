@@ -37,3 +37,11 @@ menu "System Tools" folder {
      prog iostat xterm_16x16.xpm xterm -e ksh -c "iostat 1"
      prog "iperf (server)" xterm_16x16.xpm xterm -e ksh -c "iperf -s"
 }
+
+separator
+
+menu "Window Managers" - {
+     restart cmw - /usr/X11R6/bin/cwm
+     restart tmw - /usr/X11R6/bin/twm
+     restart fvwm - /usr/X11R6/bin/fvwm
+}
