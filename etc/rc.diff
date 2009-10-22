@@ -25,7 +25,7 @@
 +echo -n 'Creating device nodes ... '
 +    cp /stand/MAKEDEV /dev/
 +    cd /dev && ./MAKEDEV all
-+echo done
++echo done.
 +
 +# BSDanywhere specific restore script
 +/etc/rc.restore
