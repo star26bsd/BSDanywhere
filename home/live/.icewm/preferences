@@ -1,6 +1,6 @@
 ShutdownCommand="sudo shutdown -h now"
 RebootCommand="sudo shutdown -r now"
-LockCommand="/usr/X11R6/bin/Xlock -mode blank"
+LockCommand="/usr/X11R6/bin/xlock -mode blank"
 DesktopBackgroundImage="/home/live/.icewm/wallpaper.jpg"
 WorkspaceNames="Workspace 1","Workspace 2"
 TaskBarShowWorkspaces="0"
