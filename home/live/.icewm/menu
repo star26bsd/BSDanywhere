@@ -14,7 +14,7 @@ menu Office folder {
      prog "Text Editor" /usr/local/share/pixmaps/xfw.png xfw
      prog "Text Viewer" /usr/local/share/pixmaps/xfv.png xfv
      prog "PDF Viewer" /usr/local/share/epdfview/pixmaps/icon_epdfview-24.png epdfview
-     prog Calculator app_16x16.xpm calcoo
+     prog Calculator app_16x16.xpm xcalc
 }
 
 menu Graphics folder {
