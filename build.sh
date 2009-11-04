@@ -214,7 +214,7 @@ install_template_files() {
 
     # Install window manager specific prerequisites.
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/
-    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/wallpaper.jpg $IMAGE_ROOT/home/live/.icewm/wallpaper.jpg
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/wallpaper-$ARCH.jpg $IMAGE_ROOT/home/live/.icewm/wallpaper.jpg
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/menu $IMAGE_ROOT/home/live/.icewm/menu
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/toolbar $IMAGE_ROOT/home/live/.icewm/toolbar
     install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/preferences $IMAGE_ROOT/home/live/.icewm/preferences
@@ -222,7 +222,7 @@ install_template_files() {
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/themes/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/themes/icedesert/
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.icewm/themes/icedesert/taskbar/
-    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/themes/icedesert/taskbar/start.xpm $IMAGE_ROOT/home/live/.icewm/themes/icedesert/taskbar/start.xpm
+    install -o 1000 -g 10 -m 644 $CWD/home/live/.icewm/themes/icedesert/taskbar/start-$ARCH.xpm $IMAGE_ROOT/home/live/.icewm/themes/icedesert/taskbar/start.xpm
 
     # XFE (file manager)
     install -d -o 1000 -g 10 -m 755 $IMAGE_ROOT/home/live/.xfe/
