@@ -129,7 +129,7 @@ prepare_build() {
     echo -n 'Preparing build environment ... '
     mkdir -p $IMAGE_ROOT
     mkdir -p $CACHE_ROOT
-    echo done
+    echo done.
 }
 
 # Get generic kernels and boot loaders.
@@ -143,7 +143,7 @@ install_boot_files() {
 	fi
 	echo -n "Installing $i ... "
 	cp -p $CACHE_ROOT/$i $IMAGE_ROOT/
-	echo done
+	echo done.
     done
 }
 
@@ -159,7 +159,7 @@ install_filesets() {
         fi
         echo -n "Installing $fs ... "
         tar -C $IMAGE_ROOT -xzphf $CACHE_ROOT/$fs
-        echo done
+        echo done.
     done
 }
 
@@ -170,7 +170,7 @@ prepare_filesystem() {
     mkdir $IMAGE_ROOT/mfs
     cd $IMAGE_ROOT/dev && ./MAKEDEV all && cd $IMAGE_ROOT
     cp $IMAGE_ROOT/dev/MAKEDEV $IMAGE_ROOT/stand/
-    echo done
+    echo done.
 }
 
 install_packages() {
@@ -180,7 +180,7 @@ install_packages() {
 
 configure_packages() {
     echo -n 'Configure some packages ... '
-    echo done
+    echo done.
 }
 
 install_template_files() {
@@ -232,7 +232,7 @@ install_template_files() {
     install -o 1000 -g 10 -m 600 $IMAGE_ROOT/var/mail/root $IMAGE_ROOT/var/mail/live
     install -d -o 1000 -g 10 -m 700 $IMAGE_ROOT/home/live/Mail
 
-    echo done
+    echo done.
 }
 
 generate_pwdb() {
@@ -274,7 +274,7 @@ package_dirlayout() {
     do
         echo -n "Packaging $fs ... "
         tar cphf - $fs | gzip -9 > $IMAGE_ROOT/stand/$fs.tgz
-        echo done
+        echo done.
     done
 }
 
@@ -296,7 +296,7 @@ clean_buildenv() {
     echo -n "Cleaning up build environment ... "
     rm /tmp/gzexe*
     rm -rf $IMAGE_ROOT
-    echo done
+    echo done.
 }
 
 
