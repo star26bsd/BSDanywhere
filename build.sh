@@ -5,6 +5,7 @@
 # Build script for creating the BSDanywhere OpenBSD Live CD image.
 # Execute this script with ./build
 #
+# Copyright (c) 2010  Eric Lederrey
 # Copyright (c) 2009  Stephan A. Rickauer
 # Copyright (c) 2008-2009  Rene Maroufi, Stephan A. Rickauer
 #
@@ -34,10 +35,12 @@
 #
 # Variables
 #
-BASE=/specify/base/path
+BASE=$HOME
 
 ARCH=$(uname -m)
-RELEASE=$(uname -r)
+RELEASE="snapshots"
+#RELEASE="$(uname -r)
+
 R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 
 IMAGE_ROOT=$BASE/image
@@ -47,7 +50,7 @@ export PKG_DBDIR=$IMAGE_ROOT/var/db/pkg
 export PKG_CACHE=$CACHE_ROOT
 
 MIRROR=http://mirror.switch.ch/ftp/pub/OpenBSD
-export PKG_PATH=$PKG_CACHE:$MIRROR/$RELEASE/packages/$ARCH/
+export PKG_PATH=$PKG_CACHE:$MIRROR/$RELEASE/packages/$ARCH
 
 CWD=$(pwd)
 THIS_OS=$(uname)
@@ -57,8 +60,8 @@ MIN_SPACE_REQ='1600000'
 #
 # Functions go first.
 #
-examine_environment() {
 
+examine_environment() {
         echo -n 'This user: '
         if [ "$USER" = 'root' ]; then
             echo 'root (ok)'
@@ -74,7 +77,14 @@ examine_environment() {
             echo "$THIS_OS (NOT ok)"
             return 1
         fi
-
+	if [ "$RELEASE" = "snapshots" ]; then
+		#determine which version we are dealing with 
+		R=$(ftp -V -o - $MIRROR/$RELEASE/$ARCH/index.txt | awk 'match($0, /comp[0-9][0-9]/){ print substr($0, RSTART+4, RLENGTH-4)}')
+    		echo "Release snapshots ($R)"
+	else
+		echo "Release $R"
+	fi
+ 
         echo -n "$BASE "
         if [ -d "$BASE" ]; then
             echo 'exists (ok)'
@@ -149,7 +159,7 @@ install_boot_files() {
 
 # Get all OpenBSD file sets except compXX.tgz.
 install_filesets() {
-    for fs in base game man misc etc xbase xetc xfont xserv xshare
+   for fs in base game man misc etc xbase xetc xfont xserv xshare
     do
         fs=$fs$R.tgz
         if [ ! -r "$CACHE_ROOT/$fs" ]
@@ -254,9 +264,11 @@ compress_binaries() {
          ! -name chmod ! -name chgrp ! -name chown \
          ! -name tar ! -name pax ! -name cpio \
          ! -name sh ! -name ksh ! -name rksh \
-         -type f -size +200 -exec gzexe {} \;
+         -type f -size +200 -exec $CWD/tools/bzexe {} \;
+	 #-type f -size +200 -exec gzexe {} \;
 
-    echo -n 'Removing gzexe ~ copies ... '
+    #echo -n 'Removing gzexe ~ copies ... '
+    echo -n 'Removing bzexe ~ copies ... '
     find $IMAGE_ROOT/bin \
          $IMAGE_ROOT/usr/bin \
          $IMAGE_ROOT/usr/sbin \
@@ -287,9 +299,11 @@ prepare_image() {
 
 burn_cdimage() {
     # Finally, create the image.
+    LABEL="BSDanywhere_$RELEASE"
+    FILENAME="bsdanywhere-$RELEASE-$ARCH.iso"
     cd $IMAGE_ROOT/..
     echo 'Creating ISO image:'
-    mkhybrid -A "BSDanywhere $RELEASE" -quiet -l -R -o bsdanywhere$R-$ARCH.iso -b cdbr -c boot.catalog image
+    mkhybrid -A $LABEL -V $LABEL -quiet -l -R -o $FILENAME -b cdbr -c boot.catalog image
 }
 
 clean_buildenv() {
@@ -303,7 +317,6 @@ clean_buildenv() {
 #
 # Main
 #
-
 examine_environment
 [ $? = 0 ] || exit 1
 
