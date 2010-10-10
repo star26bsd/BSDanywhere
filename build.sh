@@ -39,7 +39,7 @@ BASE=$HOME
 
 ARCH=$(uname -m)
 RELEASE="snapshots"
-#RELEASE="$(uname -r)
+#RELEASE="$(uname -r)"
 
 R=$(echo $RELEASE | awk -F. '{print $1$2 }')
 
@@ -50,6 +50,7 @@ export PKG_DBDIR=$IMAGE_ROOT/var/db/pkg
 export PKG_CACHE=$CACHE_ROOT
 
 MIRROR=http://mirror.switch.ch/ftp/pub/OpenBSD
+#MIRROR=http://ftp.ini.uzh.ch/pub/OpenBSD
 export PKG_PATH=$PKG_CACHE:$MIRROR/$RELEASE/packages/$ARCH
 
 CWD=$(pwd)
@@ -308,7 +309,8 @@ burn_cdimage() {
 
 clean_buildenv() {
     echo -n "Cleaning up build environment ... "
-    rm /tmp/gzexe*
+    #rm /tmp/gzexe*
+    rm /tmp/bzexe*
     rm -rf $IMAGE_ROOT
     echo done.
 }
